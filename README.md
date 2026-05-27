@@ -1,35 +1,50 @@
-# Build Your First Ionic App: Photo Gallery (Ionic Angular and Capacitor)
+# Minería de Datos - Editor 3D y App
 
-Get started with Ionic by building a photo gallery app that runs on iOS, Android, and the web - with just one codebase. This is the complete project referenced in the ["Your First App: Angular" guide](https://ionicframework.com/docs/angular/your-first-app). Follow along to create a complete CRUD (create-read-update-delete) experience.
+Este repositorio contiene el código fuente de la aplicación Ionic Angular con el diseño del visor/editor 3D y los modales integrados.
 
-Powered by [Ionic Angular](https://ionicframework.com/docs/angular/overview) (web app) and [Capacitor](https://capacitor.ionicframework.com) (native app runtime).
+## 🚀 Pasos para instalar y ejecutar el proyecto
 
-## How It Works
+Dado que las dependencias (`node_modules`) han sido excluidas para mantener el repositorio ligero, debes seguir estos pasos para poder ejecutar el código en tu computadora:
 
-After the user navigates to Tab 2 (Photos), they can tap/click on the camera button to open up the device's camera. After taking or selecting a photo, it's stored permanently into the device's filesystem. When the user reopens the app at a later time, the photo images are loaded from the filesystem and displayed again in the gallery. The user can tap on a photo to be presented with the option to remove the photo.
+### 1. Requisitos Previos
+Asegúrate de tener instalados los siguientes programas en tu computadora:
+- [Node.js](https://nodejs.org/) (recomendada la versión LTS)
+- [Git](https://git-scm.com/)
 
-## Feature Overview
-* App framework: [Angular](https://angular.io)
-* UI components: [Ionic Framework](https://ionicframework.com/docs/components)
-  * Camera button: [Floating Action Button (FAB)](https://ionicframework.com/docs/api/fab)
-  * Photo Gallery display: [Grid](https://ionicframework.com/docs/api/grid)
-  * Delete Photo dialog: [Action Sheet](https://ionicframework.com/docs/api/action-sheet) 
-* Native runtime: [Capacitor](https://capacitor.ionicframework.com)
-  * Taking photos: [Camera API](https://capacitor.ionicframework.com/docs/apis/camera)
-  * Writing photo to the filesystem: [Filesystem API](https://capacitor.ionicframework.com/docs/apis/filesystem)
-  * Storing photo gallery metadata: [Preferences API](https://capacitor.ionicframework.com/docs/apis/preferences)
+### 2. Clonar el Repositorio
+Abre tu terminal (Símbolo del sistema, PowerShell o Git Bash) y ejecuta:
+```bash
+git clone https://github.com/Fernandcx/Mineria_de_Datos.git
+cd Mineria_de_Datos
+```
 
-## Project Structure
-* Tab2 (Photos) (`src/app/tab2/`): Photo Gallery UI and basic logic.
-* PhotoService (`src/app/services/photo.service.ts`): Logic encapsulating Capacitor APIs, including Camera, Filesystem, and Preferences.
+### 3. Instalar Dependencias
+Una vez dentro de la carpeta del proyecto, instala todas las librerías de Angular, Ionic y Capacitor ejecutando el siguiente comando:
+```bash
+npm install
+```
+*(Nota: Esto creará automáticamente la carpeta `node_modules/` que contiene todo el código de terceros)*
 
-## How to Run
+### 4. Ejecutar en el Navegador (Modo de Desarrollo)
+Para ver la aplicación corriendo localmente en tu navegador web, usa el siguiente comando:
+```bash
+ionic serve
+```
+*(Si no tienes Ionic instalado de forma global, puedes instalarlo ejecutando `npm install -g @ionic/cli`)*
 
-> Note: It's highly recommended to follow along with the [tutorial guide](https://ionicframework.com/docs/angular/your-first-app), which goes into more depth, but this is the fastest way to run the app. 
+### 5. Compilar para Android Studio
+Si deseas construir el APK o probar la aplicación en tu celular/emulador mediante Android Studio:
 
-0) Install Ionic if needed: `npm install -g @ionic/cli`.
-1) Clone this repository.
-2) In a terminal, change directory into the repo: `cd photo-gallery-capacitor-ng`.
-3) Install all packages: `npm install`.
-4) Run on the web: `ionic serve`.
-5) Run on iOS or Android: See [here](https://ionicframework.com/docs/building/running).
+1. **Construye el proyecto web:**
+   ```bash
+   npm run build
+   ```
+2. **Sincroniza los archivos web al proyecto nativo de Android:**
+   ```bash
+   npx cap sync android
+   ```
+3. **Abre Android Studio automáticamente:**
+   ```bash
+   npx cap open android
+   ```
+   *Una vez que Android Studio termine de cargar y sincronizar Gradle, simplemente presiona el botón "Run" (▶️) para compilar e instalar en tu dispositivo.*
