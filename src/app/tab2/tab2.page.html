@@ -1,0 +1,143 @@
+<ion-header class="editor-header ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1" icon="arrow-back-outline" text=""></ion-back-button>
+    </ion-buttons>
+    
+    <ion-title>
+      <div class="header-title-container">
+        <div class="app-icon">
+          <ion-icon name="business"></ion-icon>
+        </div>
+        <span>Mi Apartamento</span>
+        <ion-icon name="chevron-down-outline" class="title-dropdown"></ion-icon>
+      </div>
+    </ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-button color="dark"><ion-icon name="share-social-outline"></ion-icon></ion-button>
+      <ion-button color="dark"><ion-icon name="download-outline"></ion-icon></ion-button>
+      <ion-button color="dark"><ion-icon name="settings-outline"></ion-icon></ion-button>
+      <div class="user-avatar">JG</div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="editor-content">
+  
+  <div class="editor-toolbar">
+    <div class="tools-left">
+      <button class="tool-btn"><ion-icon name="navigate-outline"></ion-icon></button>
+      <button class="tool-btn"><ion-icon name="pencil-outline"></ion-icon></button>
+      <button class="tool-btn"><ion-icon name="business-outline"></ion-icon></button>
+      <button class="tool-btn active">
+        <ion-icon name="stop-outline"></ion-icon>
+        <div class="tooltip">
+          Haz clic<br/>sobre<br/>una<br/>pared<br/>para<br/>colocar
+        </div>
+      </button>
+      <button class="tool-btn"><ion-icon name="color-wand-outline"></ion-icon></button>
+      <button class="tool-btn"><ion-icon name="arrow-undo-outline"></ion-icon></button>
+    </div>
+    
+    <div class="tools-right">
+      <div class="view-toggle">
+        <button class="toggle-btn active"><ion-icon name="grid-outline"></ion-icon> 2D</button>
+        <button class="toggle-btn"><ion-icon name="cube-outline"></ion-icon> 3D</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <div class="grid-background"></div>
+    <div class="floor-plan">
+      <!-- Sala de Estar -->
+      <div class="room room-sala">
+        <div class="room-name">Sala de Estar</div>
+        <div class="room-area">20.0 m²</div>
+        <div class="wall wall-top"><div class="wall-label">5.00 m</div></div>
+        <div class="wall wall-left"><div class="wall-label vertical-label">4.00 m</div></div>
+        <div class="door door-sala"></div>
+      </div>
+      <!-- Cocina -->
+      <div class="room room-cocina">
+        <div class="room-name">Cocina</div>
+        <div class="room-area">10.5 m²</div>
+        <div class="wall wall-top"><div class="wall-label">3.50 m</div></div>
+        <div class="wall wall-right"><div class="wall-label vertical-label">3.00 m</div></div>
+        <div class="door door-cocina"></div>
+      </div>
+      <!-- Dormitorio -->
+      <div class="room room-dorm">
+        <div class="room-name">Dormitorio 1</div>
+        <div class="room-area">16.0 m²</div>
+        <div class="wall wall-bottom"><div class="wall-label">4.00 m</div></div>
+        <div class="wall wall-left"><div class="wall-label vertical-label">4.00 m</div></div>
+      </div>
+      <!-- Baño -->
+      <div class="room room-bano">
+        <div class="room-name">Baño</div>
+        <div class="room-area">18.0 m²</div>
+        <div class="wall wall-bottom"><div class="wall-label">4.50 m</div></div>
+        <div class="wall wall-right"><div class="wall-label vertical-label">4.00 m</div></div>
+        <div class="door door-bano"></div>
+      </div>
+    </div>
+  </div>
+
+</ion-content>
+
+<ion-footer class="editor-footer ion-no-border">
+  <div class="summary-panel">
+    <div class="summary-header">
+      <span class="summary-title">RESUMEN DEL PROYECTO</span>
+      <ion-icon name="chevron-down-outline"></ion-icon>
+    </div>
+    <div class="summary-content">
+      
+      <div class="summary-left">
+        <div class="section-title"><ion-icon name="bar-chart-outline"></ion-icon> RESUMEN</div>
+        
+        <div class="stat-card">
+          <div class="stat-label"><ion-icon name="layers-outline"></ion-icon> Habitaciones</div>
+          <div class="stat-value">4</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-label"><ion-icon name="scan-outline"></ion-icon> Área total</div>
+          <div class="stat-value">64.5 m²</div>
+        </div>
+      </div>
+      
+      <div class="summary-divider"></div>
+      
+      <div class="summary-right">
+        <div class="section-title">HABITACIONES</div>
+        
+        <ul class="room-list">
+          <li>
+            <span class="room-dot" style="background-color: #e8efff;"></span>
+            <span class="room-list-name">Sala de Estar</span>
+            <span class="room-list-area">20.0</span>
+          </li>
+          <li>
+            <span class="room-dot" style="background-color: #eaf8ee;"></span>
+            <span class="room-list-name">Cocina</span>
+            <span class="room-list-area">10.5</span>
+          </li>
+          <li>
+            <span class="room-dot" style="background-color: #fff6e8;"></span>
+            <span class="room-list-name">Dormitorio 1</span>
+            <span class="room-list-area">16.0</span>
+          </li>
+          <li>
+            <span class="room-dot" style="background-color: #faedff;"></span>
+            <span class="room-list-name">Baño</span>
+            <span class="room-list-area">18.0</span>
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+  </div>
+</ion-footer>

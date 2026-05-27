@@ -1,0 +1,8 @@
+# Headers CORS movidos a cors.php para evitar duplicados
+<IfModule mod_headers.c>
+  # Header always set Access-Control-Allow-Origin "*"
+  # Header always set Access-Control-Allow-Methods "GET,POST,OPTIONS"
+  # Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+  # Header always set Access-Control-Allow-Max-Age "86400"
+  # Header always set Content-Type "application/json; charset=utf-8"
+</IfModule>

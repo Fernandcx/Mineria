@@ -1,0 +1,75 @@
+<ion-content class="custom-auth-content">
+  <div class="auth-header">
+    <ion-buttons>
+      <ion-back-button defaultHref="/" color="dark"></ion-back-button>
+    </ion-buttons>
+  </div>
+
+  <div class="auth-body">
+    <div class="logo-container" style="text-align: center; margin-bottom: 15px;">
+      <img src="assets/icon/favicon.png" alt="Logo" style="width: 55px; height: 55px; border-radius: 12px; background: #E2E5FF; padding: 5px;" onerror="this.style.display='none'" />
+    </div>
+    <h1 class="title">Iniciando sesión</h1>
+    <p class="subtitle">Escribe tu correo electrónico y tu contraseña para poder ingresar</p>
+
+    <form class="auth-form" (ngSubmit)="submitLogin()" #loginForm="ngForm">
+      <div class="input-group">
+        <label>IP Servidor</label>
+        <div class="input-container">
+          <ion-icon name="server-outline"></ion-icon>
+          <input type="text" name="apiIp" [(ngModel)]="apiIp" placeholder="Ej. 192.168.10.103" required />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <div class="input-container">
+          <ion-icon name="mail-outline"></ion-icon>
+          <input type="text" name="username" [(ngModel)]="username" placeholder="Escribe tu correo electrónico" required />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <div class="input-container">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          <input type="password" name="password" [(ngModel)]="password" placeholder="Escribe tu contraseña" required />
+          <ion-icon name="eye-off-outline" class="trailing-icon"></ion-icon>
+        </div>
+      </div>
+
+      <a routerLink="/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
+      
+      <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <p class="feedback success" *ngIf="successMessage">{{ successMessage }}</p>
+      <div class="debug-log" *ngIf="debugLog.length">
+        <strong>Log</strong>
+        <pre>{{ debugText }}</pre>
+      </div>
+      
+      <button type="submit" class="primary-btn" [disabled]="isSubmitting || !loginForm.form.valid">
+        {{ isSubmitting ? 'Iniciando...' : 'Iniciar sesión' }}
+      </button>
+
+      <div class="divider">
+        <span></span>
+      </div>
+
+      <button type="button" class="social-btn google-btn">
+        <ion-icon name="logo-google" style="color: #DB4437;"></ion-icon> Iniciar sesión con Google
+      </button>
+
+      <button type="button" class="social-btn apple-btn">
+        <ion-icon name="logo-apple" style="color: #000;"></ion-icon> Iniciar sesión con Apple
+      </button>
+
+      <p class="terms-text">
+        Al iniciar sesión con una cuenta, aceptas los Términos de servicio y la Política de privacidad de [Nombre de la aplicación]
+      </p>
+
+      <p class="toggle-mode">
+        <a routerLink="/register">¿No tienes cuenta? Regístrate</a>
+      </p>
+    </form>
+  </div>
+</ion-content>
