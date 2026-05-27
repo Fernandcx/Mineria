@@ -5,6 +5,9 @@ const config: CapacitorConfig = {
   bundledWebRuntime: false,
   npmClient: "npm",
   webDir: "www",
+  server: {
+    cleartext: true
+  }
 };
 
 export default config;

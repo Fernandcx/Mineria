@@ -3,5 +3,8 @@
 	"appName": "Photo Gallery Cap Ng",
 	"bundledWebRuntime": false,
 	"npmClient": "npm",
-	"webDir": "www"
+	"webDir": "www",
+	"server": {
+		"cleartext": true
+	}
 }

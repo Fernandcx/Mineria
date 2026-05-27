@@ -22,7 +22,7 @@ interface LoginResponse {
 export class LoginPage {
   private readonly apiIpStorageKey = '9amm_api_ip';
 
-  apiIp = localStorage.getItem(this.apiIpStorageKey) || '';
+  apiIp = localStorage.getItem(this.apiIpStorageKey) || '192.168.4.13';
   username = '';
   password = '';
   errorMessage = '';
@@ -70,7 +70,11 @@ export class LoginPage {
   }
 
   private normalizeApiBaseUrl(value: string): string | null {
-    const trimmedValue = value.trim().replace(/\/+$/, '');
+    let trimmedValue = value.trim().replace(/\/+$/, '');
+    
+    if (trimmedValue === 'localhost') {
+      trimmedValue = '192.168.4.13';
+    }
 
     if (!trimmedValue) {
       return null;
