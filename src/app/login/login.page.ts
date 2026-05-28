@@ -126,6 +126,7 @@ export class LoginPage {
       }
 
       this.successMessage = response.data.message;
+      localStorage.setItem('9amm_user', JSON.stringify(response.data.user || { nombre: this.username, usuario: this.username }));
       this.router.navigateByUrl('/tabs', { replaceUrl: true });
     } catch (error) {
       this.logAxiosError(error as AxiosError);

@@ -1,82 +1,80 @@
 <ion-content class="custom-auth-content">
-  <div class="auth-header">
-    <ion-buttons>
-      <ion-back-button defaultHref="/" color="dark"></ion-back-button>
-    </ion-buttons>
-  </div>
-
-  <div class="auth-body">
-    <div class="logo-container" style="text-align: center; margin-bottom: 15px;">
-      <img src="assets/icon/favicon.png" alt="Logo" style="width: 55px; height: 55px; border-radius: 12px; background: #E2E5FF; padding: 5px;" onerror="this.style.display='none'" />
+  <div class="page-container">
+    
+    <div class="auth-header-top">
+      <div class="icon-box">
+        <ion-icon name="business-outline"></ion-icon>
+      </div>
+      <h1 class="title">Crea tu cuenta</h1>
+      <p class="subtitle">Regístrate para comenzar</p>
     </div>
-    <h1 class="title">Crear una cuenta</h1>
-    <p class="subtitle">Escribe tu correo electrónico y tu contraseña para poder crear una cuenta</p>
 
-    <form class="auth-form" (ngSubmit)="submitRegister()" #registerForm="ngForm">
-      <div class="input-group">
-        <label>IP Servidor</label>
-        <div class="input-container">
-          <ion-icon name="server-outline"></ion-icon>
-          <input type="text" name="apiIp" [(ngModel)]="apiIp" placeholder="Ej. 192.168.10.103" required />
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label>Nombre del usuario</label>
-        <div class="input-container">
-          <ion-icon name="person-outline"></ion-icon>
-          <input type="text" name="nombre" [(ngModel)]="nombre" placeholder="Escribe tu nombre completo" required />
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label>Correo Electrónico</label>
-        <div class="input-container">
-          <ion-icon name="mail-outline"></ion-icon>
-          <input type="text" name="username" [(ngModel)]="username" placeholder="Escribe tu correo electrónico" required />
-        </div>
-      </div>
-
-      <div class="input-group" style="margin-bottom: 15px;">
-        <label>Contraseña</label>
-        <div class="input-container">
-          <ion-icon name="lock-closed-outline"></ion-icon>
-          <input type="password" name="password" [(ngModel)]="password" placeholder="Escribe tu contraseña" required />
-          <ion-icon name="eye-off-outline" class="trailing-icon"></ion-icon>
-        </div>
-      </div>
-
-      <div class="checkbox-group">
-        <input type="checkbox" id="terms" required />
-        <label for="terms">Aceptar Términos y Condiciones y Política de Privacidad.</label>
-      </div>
-      
-      <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
-      <p class="feedback success" *ngIf="successMessage">{{ successMessage }}</p>
-      <div class="debug-log" *ngIf="debugLog.length">
-        <strong>Log</strong>
-        <pre>{{ debugText }}</pre>
-      </div>
-      
-      <button type="submit" class="primary-btn" [disabled]="isSubmitting || !registerForm.form.valid">
-        {{ isSubmitting ? 'Creando...' : 'Crear cuenta' }}
+    <div class="auth-card">
+      <button type="button" class="social-btn google-btn">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHBhdGggZmlsbD0iI0VBNDMzNSIgZD0iTTI0IDkuNWMzLjU0IDAgNi43MSAxLjIyIDkuMjEgMy42bDYuODUtNi44NUMzNS45IDIuMzggMzAuNDcgMCAyNCAwIDE0LjYyIDAgNi41MSA1LjM4IDIuNzYgMTMuMjJsNy45OCA2LjE5QzEyLjU0IDExLjIyIDE3LjgzIDkuNSAyNCA5LjV6Ii8+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTQ2Ljk4IDI0LjU1YzAtMS41Ny0uMTUtMy4wOS0uMzgtNC41NUgyNHY5LjAyaDEyLjljLS41OCAyLjk2LTIuMjYgNS40OC00Ljc4IDcuMThsNy43MyA2YzQuNTEtNC4xOCA3LjE0LTEwLjM2IDcuMTQtMTcuNjV6Ii8+PHBhdGggZmlsbD0iI0ZCQkMwNSIgZD0iTTEwLjc0IDI4LjAxQzEwLjE5IDI2LjUgOS44NiAyNC44NyA5Ljg2IDIzcy4zMy0zLjUgLjg4LTUuMDFsLTcuOTgtNi4xOUMxLjE1IDE0LjE3IDAgMTguNDYgMCAyM3MxLjE1IDguODMgMi43NiAxMS4yMmw3Ljk4LTYuMjF6Ii8+PHBhdGggZmlsbD0iIzM0QTg1MyIgZD0iTTI0IDQ2YzYuNDggMCAxMS45MS0yLjEzIDE1Ljg5LTUuODFsLTcuNzMtNmMtMi4xNSAxLjQ1LTQuOTIgMi4zLTEuMTYgMi4zLTYuMTcgMC0xMS40Ni00LjE2LTEzLjMyLTkuNzVsLTcuOTggNi4xOUM2LjUxIDQyLjYyIDE0LjYyIDQ2IDI0IDQ2eiIvPjwvc3ZnPg==" alt="Google" class="google-logo">
+        Continuar con Google
       </button>
 
       <div class="divider">
-        <span></span>
+        <span>O</span>
       </div>
 
-      <button type="button" class="social-btn google-btn">
-        <ion-icon name="logo-google" style="color: #DB4437;"></ion-icon> Iniciar sesión con Google
-      </button>
+      <form class="auth-form" (ngSubmit)="submitRegister()" #registerForm="ngForm">
+        
+        <div class="input-group">
+          <label>IP del Servidor</label>
+          <div class="input-container">
+            <ion-icon name="server-outline"></ion-icon>
+            <input type="text" name="apiIp" [(ngModel)]="apiIp" placeholder="Ej. 192.168.10.103" required />
+          </div>
+        </div>
 
-      <button type="button" class="social-btn apple-btn">
-        <ion-icon name="logo-apple" style="color: #000;"></ion-icon> Iniciar sesión con Apple
-      </button>
+        <div class="input-group">
+          <label>Nombre Completo</label>
+          <div class="input-container">
+            <ion-icon name="person-outline"></ion-icon>
+            <input type="text" name="nombre" [(ngModel)]="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
-      <p class="toggle-mode">
-        <a routerLink="/login">¿Ya tienes cuenta? Inicia sesión</a>
-      </p>
-    </form>
+        <div class="input-group">
+          <label>Correo</label>
+          <div class="input-container">
+            <ion-icon name="mail-outline"></ion-icon>
+            <input type="email" name="username" [(ngModel)]="username" placeholder="tu@correo.com" required />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña</label>
+          <div class="input-container">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input type="password" name="password" [(ngModel)]="password" placeholder="••••••••" required />
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" required />
+          <label for="terms">Acepto los Términos, Condiciones y Política de Privacidad.</label>
+        </div>
+        
+        <p class="feedback error" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="feedback success" *ngIf="successMessage">{{ successMessage }}</p>
+        
+        <div class="debug-log" *ngIf="debugLog.length">
+          <strong>Log</strong>
+          <pre>{{ debugText }}</pre>
+        </div>
+        
+        <button type="submit" class="primary-btn" [disabled]="isSubmitting || !registerForm.form.valid">
+          {{ isSubmitting ? 'Creando...' : 'Crear cuenta' }}
+        </button>
+      </form>
+    </div>
+
+    <p class="toggle-mode">
+      ¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a>
+    </p>
+
   </div>
 </ion-content>

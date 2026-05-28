@@ -4,68 +4,40 @@
     <div class="header-section">
       <div class="header-text">
         <h1 class="main-title">Mis Proyectos</h1>
-        <p class="main-subtitle">Gestione y visualice sus escaneos recientes.</p>
+        <p class="main-subtitle">{{ projects.length }} proyectos</p>
       </div>
-      <button class="new-scan-btn">
+      <button class="add-project-btn" routerLink="/tabs/tab2">
         <ion-icon name="add-outline"></ion-icon>
-        <div style="text-align: left; line-height: 1.2;">
-          Nuevo<br/>Escaneo
-        </div>
       </button>
-    </div>
-
-    <div class="action-buttons">
-      <button class="action-btn" (click)="showUploadModal = true">
-        <ion-icon name="push-outline" class="icon-blue"></ion-icon>
-        Cargar imágenes
-      </button>
-      <button class="action-btn" (click)="showCameraModal = true">
-        <ion-icon name="camera-outline" class="icon-blue"></ion-icon>
-        Analizar cámara
-      </button>
-    </div>
-
-    <!-- Modal Cargar imágenes -->
-    <div class="custom-modal-overlay" *ngIf="showUploadModal" (click)="showUploadModal = false">
-      <div class="custom-modal-content" (click)="$event.stopPropagation()">
-        <ion-icon name="cloud-upload-outline" style="font-size: 3rem; color: #3880ff;"></ion-icon>
-        <h2>Cargar Imágenes</h2>
-        <p>Seleccione las imágenes de su dispositivo para iniciar la reconstrucción 3D.</p>
-        <ion-button expand="block" (click)="showUploadModal = false">Seleccionar Archivos</ion-button>
-      </div>
-    </div>
-
-    <!-- Modal Analizar cámara -->
-    <div class="custom-modal-overlay" *ngIf="showCameraModal" (click)="showCameraModal = false">
-      <div class="custom-modal-content" (click)="$event.stopPropagation()">
-        <ion-icon name="scan-outline" style="font-size: 3rem; color: #3880ff;"></ion-icon>
-        <h2>Análisis de Cámara</h2>
-        <p>Inicializando el motor de escaneo de cámara...</p>
-        <ion-button expand="block" color="secondary" routerLink="/tabs/tab2" (click)="showCameraModal = false">Iniciar Escaneo</ion-button>
-      </div>
     </div>
 
     <div class="projects-list">
       <div class="project-card" *ngFor="let p of projects">
-        <div class="card-image-container">
-          <img [src]="p.image" alt="Project Image" class="card-image" />
-          <div class="overlay-grid"></div>
-          <div class="pill-id">ID: {{p.id}}</div>
-          <button class="btn-more"><ion-icon name="ellipsis-vertical"></ion-icon></button>
+        
+        <div class="card-image-placeholder">
+          <ion-icon name="cube-outline" class="placeholder-icon"></ion-icon>
+          <span class="status-badge" [ngClass]="p.statusClass">{{ p.status }}</span>
         </div>
         
         <div class="card-body">
-          <h2 class="project-title">{{p.title}}</h2>
+          <h2 class="project-title">{{ p.title }}</h2>
           <div class="project-meta">
-            <span class="meta-item"><ion-icon name="expand-outline"></ion-icon> {{p.area}}</span>
-            <span class="meta-item"><ion-icon name="time-outline"></ion-icon> {{p.dateStr}}</span>
+            <span class="meta-item"><ion-icon name="pricetag-outline"></ion-icon> {{ p.area }}</span>
+            <span class="meta-item"><ion-icon name="calendar-outline"></ion-icon> {{ p.dateStr }}</span>
           </div>
           
-          <button class="view-btn" [ngClass]="p.buttonType === 'solid' ? 'btn-solid' : 'btn-light'" routerLink="/tabs/tab2">
-            <ion-icon name="eye-outline"></ion-icon>
-            Ver plano
-          </button>
+          <div class="card-actions">
+            <button class="action-btn btn-primary" routerLink="/editor">
+              <ion-icon name="eye-outline"></ion-icon>
+              Ver
+            </button>
+            <button class="action-btn btn-secondary" routerLink="/editor" [queryParams]="{view: '3D'}">
+              <ion-icon name="cube-outline"></ion-icon>
+              3D
+            </button>
+          </div>
         </div>
+        
       </div>
     </div>
     

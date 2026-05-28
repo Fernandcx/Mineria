@@ -1,20 +1,62 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>
-      Usuarios
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="profile-content">
+  <div class="page-container">
+    
+    <div class="profile-header">
+      <div class="avatar-circle">
+        <ion-icon name="person-outline"></ion-icon>
+      </div>
+      <h2 class="user-name">{{ user.nombre }}</h2>
+      <p class="user-email">
+        <ion-icon name="mail-outline"></ion-icon>
+        {{ user.usuario }}
+      </p>
+    </div>
 
-<ion-content>
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Usuarios</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="menu-card">
+      <div class="menu-item" (click)="toggleSection('personal')">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>Información personal</span>
+        <ion-icon [name]="expandedSection === 'personal' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'personal'">
+        <p><strong>Nombre:</strong> {{ user.nombre }}</p>
+        <p><strong>Email:</strong> {{ user.usuario }}</p>
+        <p><strong>Teléfono:</strong> +52 555 123 4567</p>
+      </div>
+      <div class="menu-divider"></div>
+      
+      <div class="menu-item" (click)="toggleSection('config')">
+        <ion-icon name="settings-outline"></ion-icon>
+        <span>Configuración</span>
+        <ion-icon [name]="expandedSection === 'config' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'config'">
+        <div class="config-option">
+          <span>Notificaciones push</span>
+          <ion-toggle checked="true"></ion-toggle>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      
+      <div class="menu-item" (click)="toggleSection('history')">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>Historial de proyectos</span>
+        <span class="badge" *ngIf="expandedSection !== 'history'">3</span>
+        <ion-icon [name]="expandedSection === 'history' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'history'">
+        <ul class="history-list">
+          <li>Edificio Residencial Las Palmas <br><em>Completado - 27 May 2026</em></li>
+          <li>Centro Comercial Aurora <br><em>En Proceso - 27 May 2026</em></li>
+          <li>Puente Colgante San Juan <br><em>Pausado - 15 Abr 2026</em></li>
+        </ul>
+      </div>
+    </div>
 
-  <div class="tab3-content">
-    <h2>{{ usersMessage }}</h2>
-    <p>El login ahora vive antes del contenedor de tabs.</p>
+    <button class="logout-btn" (click)="logout()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Cerrar sesión
+    </button>
+
   </div>
 </ion-content>

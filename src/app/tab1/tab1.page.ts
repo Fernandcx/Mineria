@@ -1,14 +1,5 @@
 import { Component } from '@angular/core';
 
-interface Project {
-  id: string;
-  title: string;
-  area: string;
-  dateStr: string;
-  image: string;
-  buttonType: 'light' | 'solid';
-}
-
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -16,36 +7,32 @@ interface Project {
 })
 export class Tab1Page {
   
-  projects: Project[] = [
+  projects = [
     {
-      id: '48291',
-      title: 'Apartamento Centro',
-      area: '45 m²',
-      dateStr: 'Escaneado ayer',
-      image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop',
-      buttonType: 'light'
+      id: 1,
+      title: 'Edificio Residencial Las Palmas',
+      area: '1200 m²',
+      dateStr: '27 May 2026',
+      status: 'Completado',
+      statusClass: 'badge-success'
     },
     {
-      id: '48305',
-      title: 'Habitación Principal',
-      area: '18 m²',
-      dateStr: 'Hace 3 días',
-      image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=600&auto=format&fit=crop',
-      buttonType: 'solid'
+      id: 2,
+      title: 'Centro Comercial Aurora',
+      area: '3500 m²',
+      dateStr: '27 May 2026',
+      status: 'En Proceso',
+      statusClass: 'badge-primary'
     },
     {
-      id: '48317',
-      title: 'Cocina Remodelada',
-      area: '22 m²',
-      dateStr: 'Hace 1 semana',
-      image: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?q=80&w=600&auto=format&fit=crop',
-      buttonType: 'solid'
+      id: 3,
+      title: 'Casa Habitación Familia Ruiz',
+      area: '250 m²',
+      dateStr: '25 May 2026',
+      status: 'Pendiente',
+      statusClass: 'badge-warning'
     }
   ];
 
-  showUploadModal = false;
-  showCameraModal = false;
-
   constructor() {}
-
 }

@@ -1,0 +1,111 @@
+<ion-content class="results-content">
+  <div class="page-container">
+    
+    <!-- Custom Header -->
+    <div class="custom-header">
+      <div class="header-left">
+        <button class="back-btn" routerLink="/tabs/tab1">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="header-titles">
+          <h1 class="main-title">Edificio Residencial Las Palmas</h1>
+          <p class="main-subtitle">Resultados del análisis</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Dashboard View -->
+    <div class="dashboard-view" *ngIf="currentView === 'results'">
+      
+      <!-- Elementos Detectados -->
+      <div class="elements-panel">
+        <h3 class="panel-label">ELEMENTOS DETECTADOS</h3>
+        <div class="elements-row">
+          
+          <div class="element-item">
+            <ion-icon name="grid-outline"></ion-icon>
+            <div class="element-value">16</div>
+            <div class="element-name">Columnas</div>
+          </div>
+          
+          <div class="element-item">
+            <ion-icon name="remove-outline"></ion-icon>
+            <div class="element-value">24</div>
+            <div class="element-name">Vigas</div>
+          </div>
+          
+          <div class="element-item">
+            <ion-icon name="apps-outline"></ion-icon>
+            <div class="element-value">12</div>
+            <div class="element-name">Muros</div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        
+        <!-- Acero -->
+        <div class="metric-card">
+          <div class="icon-wrapper icon-blue">
+            <ion-icon name="cube-outline"></ion-icon>
+          </div>
+          <p class="metric-label">Acero estimado</p>
+          <div class="metric-value">
+            <span class="number">18.500</span> <span class="unit">kg</span>
+          </div>
+        </div>
+        
+        <!-- Concreto -->
+        <div class="metric-card">
+          <div class="icon-wrapper icon-blue">
+            <ion-icon name="cube-outline"></ion-icon>
+          </div>
+          <p class="metric-label">Concreto</p>
+          <div class="metric-value">
+            <span class="number">320</span> <span class="unit">m³</span>
+          </div>
+        </div>
+        
+        <!-- Peso -->
+        <div class="metric-card">
+          <div class="icon-wrapper icon-blue">
+            <ion-icon name="barbell-outline"></ion-icon>
+          </div>
+          <p class="metric-label">Peso estructural</p>
+          <div class="metric-value">
+            <span class="number">850</span> <span class="unit">ton</span>
+          </div>
+        </div>
+        
+        <!-- Costo -->
+        <div class="metric-card">
+          <div class="icon-wrapper icon-green">
+            <ion-icon name="logo-usd"></ion-icon>
+          </div>
+          <p class="metric-label">Costo aprox.</p>
+          <div class="metric-value">
+            <span class="number">245.000</span> <span class="unit">USD</span>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+
+    <!-- 3D Structural View -->
+    <div class="model-3d-view" *ngIf="currentView === '3D'">
+      <div class="css-3d-wrapper">
+        <div class="skyscraper">
+          <div class="wall wall-front"><div class="grid-lines"></div></div>
+          <div class="wall wall-back"><div class="grid-lines"></div></div>
+          <div class="wall wall-left"><div class="grid-lines"></div></div>
+          <div class="wall wall-right"><div class="grid-lines"></div></div>
+          <div class="roof"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
