@@ -10,7 +10,22 @@ export class Tab2Page {
   isModalOpen: boolean = false;
   selectedModalType: string = '';
 
+  typeDropdownOpen = false;
+  materialDropdownOpen = false;
+  selectedType = '';
+  selectedMaterial = '';
+
   constructor() {}
+
+  selectType(type: string) {
+    this.selectedType = type;
+    this.typeDropdownOpen = false;
+  }
+
+  selectMaterial(material: string) {
+    this.selectedMaterial = material;
+    this.materialDropdownOpen = false;
+  }
 
   openModal(type: string) {
     this.selectedModalType = type;

@@ -38,12 +38,16 @@
       <div class="form-row">
         <div class="form-group half-width">
           <h3 class="section-label">TIPO</h3>
-          <div class="custom-select-wrapper">
-            <ion-select interface="popover" placeholder="Selecciona" class="custom-ion-select">
-              <ion-select-option value="residencial">Residencial</ion-select-option>
-              <ion-select-option value="comercial">Comercial</ion-select-option>
-              <ion-select-option value="industrial">Industrial</ion-select-option>
-            </ion-select>
+          <div class="custom-dropdown" [class.open]="typeDropdownOpen">
+            <div class="dropdown-header" (click)="typeDropdownOpen = !typeDropdownOpen; materialDropdownOpen = false">
+              <span [class.placeholder]="!selectedType">{{ selectedType || 'Selecciona un tipo' }}</span>
+              <ion-icon name="chevron-down-outline"></ion-icon>
+            </div>
+            <div class="dropdown-list" *ngIf="typeDropdownOpen">
+              <div class="dropdown-item" (click)="selectType('Residencial')">Residencial</div>
+              <div class="dropdown-item" (click)="selectType('Comercial')">Comercial</div>
+              <div class="dropdown-item" (click)="selectType('Industrial')">Industrial</div>
+            </div>
           </div>
         </div>
         
@@ -55,12 +59,16 @@
 
       <div class="form-group">
         <h3 class="section-label">MATERIAL PRINCIPAL</h3>
-        <div class="custom-select-wrapper">
-          <ion-select interface="popover" placeholder="Selecciona" class="custom-ion-select">
-            <ion-select-option value="concreto">Concreto</ion-select-option>
-            <ion-select-option value="acero">Acero</ion-select-option>
-            <ion-select-option value="madera">Madera</ion-select-option>
-          </ion-select>
+        <div class="custom-dropdown" [class.open]="materialDropdownOpen">
+          <div class="dropdown-header" (click)="materialDropdownOpen = !materialDropdownOpen; typeDropdownOpen = false">
+            <span [class.placeholder]="!selectedMaterial">{{ selectedMaterial || 'Selecciona un material' }}</span>
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </div>
+          <div class="dropdown-list" *ngIf="materialDropdownOpen">
+            <div class="dropdown-item" (click)="selectMaterial('Concreto')">Concreto</div>
+            <div class="dropdown-item" (click)="selectMaterial('Acero')">Acero</div>
+            <div class="dropdown-item" (click)="selectMaterial('Madera')">Madera</div>
+          </div>
         </div>
       </div>
 

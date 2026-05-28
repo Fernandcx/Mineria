@@ -127,22 +127,81 @@ ion-content {
   }
 }
 
-.custom-ion-select {
+.custom-dropdown {
+  position: relative;
   width: 100%;
-  background: white;
-  border: 1px solid #e6eaf3;
-  border-radius: 12px;
-  padding: 14px 16px;
-  font-size: 14px;
-  color: #1e204c;
-  --placeholder-color: #9da3b2;
-  --placeholder-opacity: 1;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.01);
-  
-  &::part(icon) {
-    color: #9da3b2;
-    opacity: 1;
+
+  .dropdown-header {
+    width: 100%;
+    background: white;
+    border: 1px solid #e6eaf3;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #1e204c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    .placeholder {
+      color: #9da3b2;
+    }
+
+    ion-icon {
+      color: #9da3b2;
+      transition: transform 0.2s;
+    }
   }
+
+  &.open .dropdown-header {
+    border-color: #8f94b8;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    
+    ion-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #8f94b8;
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+
+    .dropdown-item {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #1e204c;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f2f5;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:active {
+        background-color: #f4f5f8;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .custom-modal-overlay {
