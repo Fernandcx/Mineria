@@ -5,6 +5,12 @@ import { Router } from '@angular/router';
 interface RegisterResponse {
   ok: boolean;
   message: string;
+  user?: {
+    id: number;
+    nombre: string;
+    usuario: string;
+    rol: string;
+  };
 }
 
 @Component({
@@ -126,10 +132,8 @@ export class RegisterPage {
       }
 
       this.successMessage = response.data.message;
-      
-      setTimeout(() => {
-        this.router.navigateByUrl('/login', { replaceUrl: true });
-      }, 1500);
+      localStorage.setItem('9amm_user', JSON.stringify(response.data.user || { nombre: this.nombre, usuario: this.username }));
+      this.router.navigateByUrl('/tabs', { replaceUrl: true });
 
     } catch (error) {
       this.logAxiosError(error as AxiosError);
