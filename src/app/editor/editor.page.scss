@@ -184,62 +184,86 @@ ion-content {
   }
 }
 
-/* 3D View */
+/* Advanced AR Overlay View */
 .model-3d-view {
   width: 100%;
   height: calc(100vh - 150px);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #e6eaf3;
   
-  .css-3d-wrapper {
-    perspective: 1200px;
-  }
-
-  .skyscraper {
-    width: 120px;
-    height: 240px;
-    position: relative;
-    transform-style: preserve-3d;
-    animation: rotateBuilding 15s infinite linear;
-    transform: rotateX(-15deg);
-  }
-
-  .wall {
-    position: absolute;
-    width: 120px;
-    height: 240px;
-    background: rgba(46, 50, 113, 0.1);
-    border: 2px solid #2e3271;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .grid-lines {
+  .ar-preview-container {
     width: 100%;
     height: 100%;
-    background-image: 
-      linear-gradient(rgba(46, 50, 113, 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(46, 50, 113, 0.5) 1px, transparent 1px);
-    background-size: 30px 30px;
+    position: relative;
+    overflow: hidden;
+
+    .captured-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #8f95a3;
+      
+      ion-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+      }
+    }
   }
 
-  .wall-front { transform: translateZ(60px); }
-  .wall-back { transform: rotateY(180deg) translateZ(60px); }
-  .wall-left { transform: rotateY(-90deg) translateZ(60px); }
-  .wall-right { transform: rotateY(90deg) translateZ(60px); }
-
-  .roof {
+  .ar-overlay {
     position: absolute;
-    width: 120px;
-    height: 120px;
-    background: rgba(46, 50, 113, 0.3);
-    border: 2px solid #2e3271;
-    transform: rotateX(90deg) translateZ(60px);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    
+    .ar-lines {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .measurement-label {
+      position: absolute;
+      background: white;
+      color: #1e204c;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      
+      &.label-top-left {
+        top: 15%;
+        left: 20%;
+      }
+      
+      &.label-top {
+        top: 12%;
+        left: 60%;
+      }
+      
+      &.label-right {
+        top: 50%;
+        right: 15%;
+        transform: translateY(-50%);
+      }
+    }
   }
 }
 
-@keyframes rotateBuilding {
-  0% { transform: rotateX(-15deg) rotateY(0deg); }
-  100% { transform: rotateX(-15deg) rotateY(360deg); }
-}

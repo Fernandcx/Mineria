@@ -26,6 +26,10 @@ const routes: Routes = [
   {
     path: 'editor',
     loadChildren: () => import('./editor/editor.module').then( m => m.EditorPageModule)
+  },
+  {
+    path: 'scan-room',
+    loadChildren: () => import('./scan-room/scan-room.module').then( m => m.ScanRoomPageModule)
   }
 ];
 @NgModule({

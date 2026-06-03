@@ -1,0 +1,54 @@
+<ion-content [fullscreen]="true">
+  <div class="ar-wrapper">
+    <!-- Cámara Real del Celular (Video HTML5) -->
+    <video #cameraVideo autoplay playsinline muted [hidden]="!isSessionActive" class="bg-camera"></video>
+
+    <!-- Escena 3D Superpuesta (WebGL + CSS2D transparentes) -->
+    <div #arContainer class="ar-container" [hidden]="!isSessionActive"></div>
+  </div>
+
+  <!-- Pantalla de Inicio AR removida. La cámara inicia automáticamente. -->
+
+  <!-- Interfaz Sobrepuesta AR -->
+  <div class="ar-ui-overlay" *ngIf="isSessionActive">
+    <div class="header">
+      <button class="close-btn" (click)="cerrar()"><ion-icon name="close"></ion-icon></button>
+      <div class="title">Modo Medición 3D</div>
+    </div>
+
+    <div class="ar-controls">
+      <!-- UI Limpia sin lista de textos -->
+    </div>
+
+    <!-- Panel de Resultados Finales -->
+    <div class="results-panel" *ngIf="showResults">
+      <div class="vol-item">V = {{ arVolume | number:'1.2-2' }} m³</div>
+      <div class="vol-item">S = {{ arSurface | number:'1.2-2' }} m²</div>
+      <div class="vol-item">P = {{ arPerimeter | number:'1.2-2' }} m</div>
+    </div>
+
+    <!-- Minimapa isométrico flotante -->
+    <div class="isometric-floorplan" *ngIf="showResults">
+      <!-- Se generará con SVG o Konva basado en los puntos trazados -->
+      <svg viewBox="0 0 100 50">
+        <polygon points="50,5 95,25 50,45 5,25" fill="rgba(255,255,255,0.8)" stroke="#4a55c2" stroke-width="1" />
+        <polygon points="50,15 80,30 50,40 20,30" fill="none" stroke="#4a55c2" stroke-width="0.5" />
+        <line x1="35" y1="22" x2="65" y2="38" stroke="#4a55c2" stroke-width="0.5" />
+        <line x1="65" y1="22" x2="35" y2="38" stroke="#4a55c2" stroke-width="0.5" />
+      </svg>
+    </div>
+
+    <!-- Controles Inferiores -->
+    <div class="action-footer">
+      <button class="add-point-btn" *ngIf="!showResults" (click)="agregarPunto()">
+        <ion-icon name="add"></ion-icon> Añadir Pared
+      </button>
+      <button class="generate-plan-btn" *ngIf="!showResults && puntos.length > 2" (click)="generatePlan()">
+        Cerrar Cuarto
+      </button>
+      <button class="generate-plan-btn" *ngIf="showResults" (click)="cerrar()">
+        Guardar Proyecto
+      </button>
+    </div>
+  </div>
+</ion-content>

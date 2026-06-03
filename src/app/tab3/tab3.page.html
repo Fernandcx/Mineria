@@ -45,11 +45,26 @@
         <ion-icon [name]="expandedSection === 'history' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
       </div>
       <div class="menu-content" *ngIf="expandedSection === 'history'">
-        <ul class="history-list">
-          <li>Edificio Residencial Las Palmas <br><em>Completado - 27 May 2026</em></li>
-          <li>Centro Comercial Aurora <br><em>En Proceso - 27 May 2026</em></li>
-          <li>Puente Colgante San Juan <br><em>Pausado - 15 Abr 2026</em></li>
+        
+        <div *ngIf="isLoadingHistory" style="text-align: center; padding: 1rem; color: #a1a1aa;">
+          <ion-spinner name="dots"></ion-spinner>
+        </div>
+
+        <div *ngIf="historyError" style="text-align: center; padding: 1rem; color: #ef4444;">
+          <p>{{ historyError }}</p>
+        </div>
+
+        <ul class="history-list" *ngIf="!isLoadingHistory && !historyError && history.length > 0">
+          <li *ngFor="let h of history">
+            Proyecto ID: {{ h.proyecto_id }}
+            <br><em>{{ h.resultado_ia ? 'Analizado' : 'Sin procesar' }} - {{ h.fechaFormateada }}</em>
+          </li>
         </ul>
+
+        <div *ngIf="!isLoadingHistory && !historyError && history.length === 0" style="text-align: center; padding: 1rem; color: #a1a1aa;">
+          <p>No hay historial de escaneos aún.</p>
+        </div>
+
       </div>
     </div>
 

@@ -12,6 +12,21 @@
     </div>
 
     <div class="projects-list">
+      
+      <div *ngIf="isLoading" class="loading-state" style="text-align: center; padding: 2rem; color: #a1a1aa;">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando proyectos...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-state" style="text-align: center; padding: 2rem; color: #ef4444;">
+        <ion-icon name="alert-circle-outline" style="font-size: 2rem;"></ion-icon>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <div *ngIf="!isLoading && !errorMessage && projects.length === 0" class="empty-state" style="text-align: center; padding: 2rem; color: #a1a1aa;">
+        <ion-icon name="folder-open-outline" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+        <p>No tienes proyectos aún.<br>Presiona el botón + para crear uno.</p>
+      </div>
       <div class="project-card" *ngFor="let p of projects">
         
         <div class="card-image-placeholder">
