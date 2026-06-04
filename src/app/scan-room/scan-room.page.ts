@@ -20,6 +20,9 @@ export class ScanRoomPage implements OnInit {
   isSupported = true; // HTML5 Video es universal
   isSessionActive = false;
   raycaster = new THREE.Raycaster();
+  
+  reticle: any;
+  floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Suelo virtual en Y=0
 
   constructor(public arService: ArService, private router: Router) {}
 
@@ -33,22 +36,48 @@ export class ScanRoomPage implements OnInit {
   async startAR() {
     if (this.isSessionActive) return;
     try {
-      // Pedir permisos nativos explícitamente en Android
+      // 1. Iniciar Cámara de Celular HTML5 (restaurado)
       await Camera.requestPermissions();
-
-      // 1. Iniciar Cámara de Celular HTML5
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       this.cameraVideo.nativeElement.srcObject = stream;
 
-      // 2. Iniciar Three.js Canvas Transparente
+      // 2. Iniciar Three.js Canvas
       this.arService.init(this.arContainer.nativeElement);
-      this.arService.setupRenderLoop();
+
+      // Crear retículo para plane-detection simulado matemáticamente
+      const reticleGeo = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
+      const reticleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      this.reticle = new THREE.Mesh(reticleGeo, reticleMat);
+      this.reticle.visible = false;
+      this.arService.scene.add(this.reticle);
+
+      // Iniciar el ciclo de renderizado continuo
+      this.arService.setupRenderLoop(this.onRenderFrame.bind(this));
       this.isSessionActive = true;
       
     } catch (error) {
-      alert("No se pudo acceder a la cámara del dispositivo: " + error);
+      alert("No se pudo acceder a la cámara: " + error);
+    }
+  }
+
+  onRenderFrame() {
+    if (!this.isSessionActive || !this.reticle) return;
+
+    // Trazar un rayo desde el centro exacto de la cámara
+    this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.arService.camera);
+    
+    const target = new THREE.Vector3();
+    const intersect = this.raycaster.ray.intersectPlane(this.floorPlane, target);
+    
+    if (intersect) {
+      // Si el rayo choca con el suelo (mirando hacia abajo/frente)
+      this.reticle.position.copy(target);
+      this.reticle.visible = true;
+    } else {
+      // Si mira al cielo, ocultarlo
+      this.reticle.visible = false;
     }
   }
 
@@ -58,11 +87,13 @@ export class ScanRoomPage implements OnInit {
   showResults: boolean = false;
 
   agregarPunto() {
-    if (!this.isSessionActive) return;
+    if (!this.isSessionActive || !this.reticle || !this.reticle.visible) {
+      alert("Apunta hacia el suelo (círculo blanco en pantalla)");
+      return;
+    }
 
-    // Lanzar láser al aire (profundidad fija de 3 metros)
-    const direction = this.raycaster.ray.direction.clone().normalize();
-    const posicion = new THREE.Vector3().copy(this.arService.camera.position).add(direction.multiplyScalar(3));
+    // Tomar la posición del retículo sobre el suelo virtual matemático
+    const posicion = new THREE.Vector3().copy(this.reticle.position);
 
     this.puntos.push(posicion);
 
@@ -138,9 +169,9 @@ export class ScanRoomPage implements OnInit {
     solidGeo.computeVertexNormals();
 
     const solidMat = new THREE.MeshBasicMaterial({ 
-      color: 0x4a55c2, 
+      color: 0x000000, 
       transparent: true, 
-      opacity: 0.3,
+      opacity: 0.6,
       side: THREE.DoubleSide
     });
     this.mallaSolidMesh = new THREE.Mesh(solidGeo, solidMat);
@@ -194,9 +225,9 @@ export class ScanRoomPage implements OnInit {
     const gridGeo = new THREE.BufferGeometry();
     gridGeo.setAttribute('position', new THREE.Float32BufferAttribute(gridVerts3D, 3));
     this.mallaGridMesh = new THREE.LineSegments(gridGeo, new THREE.LineBasicMaterial({
-      color: 0xffffff,
+      color: 0x000000,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.8
     }));
     this.arService.scene.add(this.mallaGridMesh);
   }

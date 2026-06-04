@@ -18,7 +18,7 @@ export class ArService {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      60, // Ajustado de 75 a 60 para igualar mejor el lente físico de celulares
       window.innerWidth / window.innerHeight,
       0.1,
       1000
@@ -41,6 +41,7 @@ export class ArService {
     this.renderer.domElement.style.position = 'absolute';
     this.renderer.domElement.style.top = '0';
     this.renderer.domElement.style.zIndex = '10';
+    this.renderer.xr.enabled = false; // Deshabilitar WebXR para usar AR Simulado
     container.appendChild(this.renderer.domElement);
 
     // CSS2D Renderer
@@ -67,10 +68,13 @@ export class ArService {
     this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  setupRenderLoop() {
-    this.renderer.setAnimationLoop(() => {
+  setupRenderLoop(customLoop?: (time: number, frame: any) => void) {
+    this.renderer.setAnimationLoop((time: number, frame: any) => {
       if (this.controls) {
-        this.controls.update(); // Actualizar cámara según giro del celular
+        this.controls.update(); // Actualizar giroscopio SIEMPRE
+      }
+      if (customLoop) {
+        customLoop(time, frame);
       }
       this.renderer.render(this.scene, this.camera);
       this.cssRenderer.render(this.scene, this.camera);

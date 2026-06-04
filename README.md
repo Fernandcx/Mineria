@@ -48,3 +48,12 @@ Si deseas construir el APK o probar la aplicación en tu celular/emulador median
    npx cap open android
    ```
    *Una vez que Android Studio termine de cargar y sincronizar Gradle, simplemente presiona el botón "Run" (▶️) para compilar e instalar en tu dispositivo.*
+
+### 6. Uso del Módulo de Realidad Aumentada (AR Simulado)
+Nuestra aplicación utiliza **AR Simulado Matemáticamente** a través del giroscopio del celular, ya que WebXR no está soportado nativamente en WebViews compilados con Capacitor. 
+
+Para que la malla se dibuje correctamente en el suelo de tu habitación, sigue estas reglas de uso:
+1. Asegúrate de dar **permisos de cámara** cuando la aplicación lo solicite (esto lo gestiona `@capacitor/camera`).
+2. Sostén el celular a la altura de tu pecho (aproximadamente 1.5 metros del suelo).
+3. **No camines** por la habitación. Funciona como un tripié: quédate en un punto fijo y **solamente gira sobre tu propio eje** para apuntar el retículo blanco hacia las distintas esquinas del suelo.
+4. Presiona el botón "Añadir Pared" en cada esquina. Al colocar un mínimo de **3 puntos**, la malla de color negro se dibujará automáticamente en el suelo de tu cámara.
