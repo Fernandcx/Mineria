@@ -99,6 +99,80 @@ export class EditorPage implements OnInit {
   setView(view: 'results' | '3D') {
     this.currentView = view;
   }
+
+  // ── Getters de perspectiva (mismo sistema que tab2) ───────────────────────
+  get vpX(): number { return this.cornerX; }
+  get vpY(): number { return this.ceilingY; }
+
+  get leftWallLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10;
+    const vpBottom = { x: this.vpX, y: this.floorY };
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y1 = this.vpY + (vpBottom.y - this.vpY) * t;
+      const y2 = (this.ceilingY - 10) + ((this.floorY + 10) - (this.ceilingY - 10)) * t;
+      lines.push(`${this.vpX},${y1} 0,${y2}`);
+    }
+    return lines;
+  }
+
+  get rightWallLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10;
+    const vpBottom = { x: this.vpX, y: this.floorY };
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y1 = this.vpY + (vpBottom.y - this.vpY) * t;
+      const y2 = (this.ceilingY - 5) + ((this.floorY + 5) - (this.ceilingY - 5)) * t;
+      lines.push(`${this.vpX},${y1} 100,${y2}`);
+    }
+    return lines;
+  }
+
+  get leftWallVerticals(): string[] {
+    const lines: string[] = [];
+    const steps = 8;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const x = this.vpX * (1 - t);
+      const topY = this.vpY + (this.ceilingY - 10 - this.vpY) * t;
+      const botY = this.floorY + (this.floorY + 10 - this.floorY) * t;
+      lines.push(`${x},${topY} ${x},${botY}`);
+    }
+    return lines;
+  }
+
+  get rightWallVerticals(): string[] {
+    const lines: string[] = [];
+    const steps = 8;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const x = this.vpX + (100 - this.vpX) * t;
+      const topY = this.vpY + (this.ceilingY - 5 - this.vpY) * t;
+      const botY = this.floorY + (this.floorY + 5 - this.floorY) * t;
+      lines.push(`${x},${topY} ${x},${botY}`);
+    }
+    return lines;
+  }
+
+  get floorLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const yFloor = this.floorY + (100 - this.floorY) * t;
+      const xLeft  = this.vpX * (1 - t);
+      const xRight = this.vpX + (100 - this.vpX) * t;
+      lines.push(`${xLeft},${yFloor} ${xRight},${yFloor}`);
+    }
+    const numRadials = 8;
+    for (let i = 0; i <= numRadials; i++) {
+      const t = i / numRadials;
+      lines.push(`${this.vpX},${this.floorY} ${100 * t},100`);
+    }
+    return lines;
+  }
 }
 
 

@@ -29,74 +29,29 @@
   }
 }
 
-.ar-start-screen {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  text-align: center;
-  background: #f7f9fc;
-  z-index: 10;
-  position: relative;
-
-  ion-icon {
-    font-size: 80px;
-    color: #4a55c2;
-    margin-bottom: 20px;
-  }
-
-  h2 {
-    color: #1e204c;
-    font-weight: 700;
-  }
-
-  p {
-    color: #7b839f;
-    margin-bottom: 40px;
-  }
-
-  button {
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-    font-weight: 700;
-    margin-bottom: 12px;
-  }
-
-  .btn-primary {
-    background: #4a55c2;
-    color: white;
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: #4a55c2;
-  }
-}
-
 .ar-ui-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 
+  // ── Header ─────────────────────────────────────────────────────────────
   .header {
     pointer-events: auto;
     display: flex;
     align-items: center;
-    padding: 20px;
-    margin-top: 20px;
+    padding: 16px 20px;
+    margin-top: env(safe-area-inset-top, 20px);
 
     .close-btn {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
+      border: none;
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -104,7 +59,9 @@
       align-items: center;
       justify-content: center;
       color: #1e204c;
-      font-size: 24px;
+      font-size: 22px;
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
     .title {
@@ -112,69 +69,104 @@
       text-align: center;
       color: white;
       font-weight: 700;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      font-size: 16px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
-  }
 
-  .measurements-panel {
-    pointer-events: auto;
-    background: rgba(255, 255, 255, 0.9);
-    margin: 20px;
-    padding: 15px;
-    border-radius: 12px;
-    max-height: 200px;
-    overflow-y: auto;
+    .surface-counter {
+      background: #4a55c2;
+      color: white;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
 
-    .measure-item {
-      padding: 8px 0;
-      border-bottom: 1px solid #e6eaf3;
-      color: #1e204c;
-      font-weight: 600;
-
-      &:last-child {
-        border-bottom: none;
+      ion-icon {
+        font-size: 14px;
       }
     }
   }
 
-  .action-footer {
+  // ── Selector Suelo / Pared ──────────────────────────────────────────────
+  .mode-selector {
     pointer-events: auto;
-    padding: 20px;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     gap: 10px;
-    align-items: center;
+    padding: 0 20px;
 
-    .add-point-btn, .generate-plan-btn {
-      background: white;
-      color: #4a55c2;
-      padding: 15px 30px;
+    .mode-btn {
+      flex: 1;
+      max-width: 140px;
+      padding: 10px 16px;
       border-radius: 30px;
-      font-weight: 700;
-      font-size: 16px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      width: 100%;
-      max-width: 300px;
+      gap: 6px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all 0.2s ease;
 
       ion-icon {
-        font-size: 24px;
+        font-size: 18px;
       }
-    }
-    
-    .generate-plan-btn {
-      background: #4a55c2;
-      color: white;
+
+      &.active {
+        background: white;
+        color: #2e3271;
+        border-color: white;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
     }
   }
 
+  // ── Indicador de modo ───────────────────────────────────────────────────
+  .mode-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 20px;
+
+    span {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 13px;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+
+    .point-count {
+      background: rgba(74, 85, 194, 0.85);
+      color: white;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+  }
+
+  // ── Panel resultados ────────────────────────────────────────────────────
   .results-panel {
     pointer-events: auto;
     position: absolute;
-    bottom: 25%;
+    bottom: 26%;
     right: 5%;
     display: flex;
     flex-direction: column;
@@ -183,40 +175,91 @@
 
     .vol-item {
       background: rgba(255, 255, 255, 0.95);
-      color: #7b839f;
-      padding: 6px 12px;
+      color: #2e3271;
+      padding: 6px 14px;
       border-radius: 12px;
       font-size: 13px;
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       border-left: 3px solid #2e3271;
     }
   }
 
+  // ── Minimapa ────────────────────────────────────────────────────────────
   .isometric-floorplan {
     position: absolute;
-    bottom: 35%;
-    left: 10%;
-    width: 80%;
-    height: 25%;
+    bottom: 36%;
+    left: 5%;
+    width: 30%;
     pointer-events: none;
+
     svg {
       width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    }
+  }
+
+  // ── Footer de acciones ──────────────────────────────────────────────────
+  .action-footer {
+    pointer-events: auto;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+
+    .add-point-btn,
+    .secondary-btn,
+    .generate-plan-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 24px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .add-point-btn {
+      background: white;
+      color: #2e3271;
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .generate-plan-btn {
+      background: #4a55c2;
+      color: white;
     }
   }
 }
 
-/* CSS2D Object Style for 3D Labels */
+/* CSS2D labels flotantes */
 .label-3d {
   background: white;
-  color: black;
-  padding: 5px 12px;
+  color: #1e204c;
+  padding: 4px 12px;
   border-radius: 20px;
   font-family: sans-serif;
-  font-size: 14px;
-  font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   pointer-events: none;
+  white-space: nowrap;
 }

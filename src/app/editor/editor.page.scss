@@ -264,6 +264,28 @@ ion-content {
         transform: translateY(-50%);
       }
     }
+
+    .ar-metrics-panel {
+      position: absolute;
+      bottom: 16px;
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+
+      .ar-metric-item {
+        background: rgba(255, 255, 255, 0.92);
+        color: #2e3271;
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        border-left: 3px solid #2e3271;
+      }
+    }
   }
 }
 

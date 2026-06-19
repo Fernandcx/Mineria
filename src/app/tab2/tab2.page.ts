@@ -109,106 +109,261 @@ export class Tab2Page {
     }
   }
 
+  // Superficies detectadas automáticamente
+  detectedSurfaces: {
+    leftWall: boolean;
+    rightWall: boolean;
+    floor: boolean;
+    ceiling: boolean;
+    hasDoorway: boolean;
+  } = { leftWall: true, rightWall: true, floor: true, ceiling: false, hasDoorway: false };
+
+  // Confianza de cada superficie (0-1) para ajustar opacidad del grid
+  surfaceConfidence = { left: 0.8, right: 0.8, floor: 0.7, ceiling: 0.5 };
+
   simulateAnalysis() {
     this.isAnalyzing = true;
-    
-    // Analyze the image to find dynamic corners
+
     if (this.previewImage) {
       this.analyzeImageStructure(this.previewImage);
     }
 
-    // Calculate dynamic values for the AR overlay
-    const baseArea = this.area && this.area > 0 ? this.area : 35; 
-    
+    const baseArea = this.area && this.area > 0 ? this.area : 35;
     this.arSurface = baseArea;
     this.arVolume = baseArea * this.arHeight;
     this.arPerimeter = Math.sqrt(baseArea) * 4;
-    
     this.arLength = Math.sqrt(baseArea) * 1.2;
     this.arWidth = baseArea / this.arLength;
   }
 
-  // ALGORITMO DE VISIÓN ARTIFICIAL (Edge Detection Perspectiva)
+  // ─────────────────────────────────────────────────────────────────────────
+  // ALGORITMO DE VISIÓN ARTIFICIAL MEJORADO (Sobel Edge Detection)
+  // Detecta automáticamente: esquina de habitación, techo, suelo, paredes
+  // ─────────────────────────────────────────────────────────────────────────
   analyzeImageStructure(dataUrl: string) {
     const img = new Image();
     img.onload = () => {
+      const W = 120, H = 120;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      
-      canvas.width = 100; 
-      canvas.height = 100;
-      ctx.drawImage(img, 0, 0, 100, 100);
-      
-      const imgData = ctx.getImageData(0, 0, 100, 100);
-      const data = imgData.data;
-      
-      // Helpers para encontrar bordes verticales/horizontales
-      const findStrongestVertical = (startX: number, endX: number) => {
-        let maxContrast = 0;
-        let bestX = (startX + endX) / 2;
-        for (let x = startX; x < endX; x++) {
-          let colContrast = 0;
-          for (let y = 20; y < 80; y += 2) {
-            const idx1 = (y * 100 + x) * 4;
-            const idx2 = (y * 100 + (x+1)) * 4;
-            const gray1 = (data[idx1] + data[idx1+1] + data[idx1+2]) / 3;
-            const gray2 = (data[idx2] + data[idx2+1] + data[idx2+2]) / 3;
-            colContrast += Math.abs(gray1 - gray2);
-          }
-          if (colContrast > maxContrast) {
-            maxContrast = colContrast;
-            bestX = x;
-          }
-        }
-        return bestX;
+
+      canvas.width = W;
+      canvas.height = H;
+      ctx.drawImage(img, 0, 0, W, H);
+      const imgData = ctx.getImageData(0, 0, W, H);
+      const d = imgData.data;
+
+      const gray = (x: number, y: number): number => {
+        const xi = Math.max(0, Math.min(W - 1, Math.round(x)));
+        const yi = Math.max(0, Math.min(H - 1, Math.round(y)));
+        const i = (yi * W + xi) * 4;
+        return (d[i] + d[i + 1] + d[i + 2]) / 3;
       };
 
-      const findStrongestHorizontal = (startY: number, endY: number) => {
-        let maxContrast = 0;
-        let bestY = (startY + endY) / 2;
-        for (let y = startY; y < endY; y++) {
-          let rowContrast = 0;
-          for (let x = 20; x < 80; x += 2) {
-            const idx1 = (y * 100 + x) * 4;
-            const idx2 = ((y+1) * 100 + x) * 4;
-            const gray1 = (data[idx1] + data[idx1+1] + data[idx1+2]) / 3;
-            const gray2 = (data[idx2] + data[idx2+1] + data[idx2+2]) / 3;
-            rowContrast += Math.abs(gray1 - gray2);
-          }
-          if (rowContrast > maxContrast) {
-            maxContrast = rowContrast;
-            bestY = y;
-          }
-        }
-        return bestY;
+      // Sobel H: detecta bordes verticales (aristas de paredes)
+      const sobelH = (x: number, y: number): number => {
+        if (x < 1 || x >= W - 1 || y < 1 || y >= H - 1) return 0;
+        return Math.abs(
+          -gray(x-1,y-1) - 2*gray(x-1,y) - gray(x-1,y+1)
+          +gray(x+1,y-1) + 2*gray(x+1,y) + gray(x+1,y+1)
+        );
       };
 
-      // 1. Encontrar la esquina de la habitación (Línea vertical más fuerte en el centro 30%-70%)
-      this.cornerX = findStrongestVertical(30, 70);
-      
-      // 2. Encontrar la línea del techo (Línea horizontal más fuerte en el top 10%-40%)
-      this.ceilingY = findStrongestHorizontal(10, 40);
-      
-      // 3. Encontrar la línea del suelo (Línea horizontal más fuerte en el bottom 60%-90%)
-      this.floorY = findStrongestHorizontal(60, 90);
+      // Sobel V: detecta bordes horizontales (suelo/techo)
+      const sobelV = (x: number, y: number): number => {
+        if (x < 1 || x >= W - 1 || y < 1 || y >= H - 1) return 0;
+        return Math.abs(
+          -gray(x-1,y-1) - 2*gray(x,y-1) - gray(x+1,y-1)
+          +gray(x-1,y+1) + 2*gray(x,y+1) + gray(x+1,y+1)
+        );
+      };
 
-      // Centrar el cutout
-      this.cutout = { 
-        x: this.cornerX - 10, 
-        y: this.ceilingY + ((this.floorY - this.ceilingY)/3), 
-        w: 20, 
-        h: ((this.floorY - this.ceilingY)/3)
+      // 1. Esquina vertical más fuerte (zona 25%-75% horizontal)
+      let bestCornerScore = 0;
+      let bestCornerX = W / 2;
+      for (let x = Math.floor(W * 0.25); x < Math.floor(W * 0.75); x++) {
+        let score = 0;
+        for (let y = Math.floor(H * 0.1); y < Math.floor(H * 0.85); y++) {
+          score += sobelH(x, y) * (y < H * 0.5 ? 1.5 : 1.0);
+        }
+        if (score > bestCornerScore) { bestCornerScore = score; bestCornerX = x; }
+      }
+      this.cornerX = (bestCornerX / W) * 100;
+
+      // 2. Línea de techo (zona 8%-38%)
+      let bestCeilingScore = 0;
+      let bestCeilingY = H * 0.18;
+      for (let y = Math.floor(H * 0.08); y < Math.floor(H * 0.38); y++) {
+        let score = 0;
+        for (let x = 5; x < W - 5; x++) score += sobelV(x, y);
+        if (score > bestCeilingScore) { bestCeilingScore = score; bestCeilingY = y; }
+      }
+      this.ceilingY = (bestCeilingY / H) * 100;
+
+      // 3. Línea de suelo (zona 55%-92%)
+      let bestFloorScore = 0;
+      let bestFloorY = H * 0.75;
+      for (let y = Math.floor(H * 0.55); y < Math.floor(H * 0.92); y++) {
+        let score = 0;
+        for (let x = 5; x < W - 5; x++) score += sobelV(x, y);
+        if (score > bestFloorScore) { bestFloorScore = score; bestFloorY = y; }
+      }
+      this.floorY = (bestFloorY / H) * 100;
+
+      // 4. Confianza de superficies normalizada
+      const maxScore = Math.max(bestCornerScore, bestCeilingScore, bestFloorScore, 1);
+      this.surfaceConfidence = {
+        left:    Math.min(1, bestCornerScore / maxScore * 1.1),
+        right:   Math.min(1, bestCornerScore / maxScore * 1.0),
+        floor:   Math.min(1, bestFloorScore  / maxScore * 1.2),
+        ceiling: Math.min(1, bestCeilingScore / maxScore * 0.9)
+      };
+
+      // 5. Detectar techo visible
+      this.detectedSurfaces.ceiling = bestCeilingScore > maxScore * 0.25;
+
+      // 6. Detectar puerta/ventana (zona de baja densidad de bordes en pared derecha)
+      const rxStart = Math.floor(bestCornerX + (W - bestCornerX) * 0.2);
+      const rxEnd   = Math.floor(bestCornerX + (W - bestCornerX) * 0.8);
+      let doorScore = 0;
+      for (let x = rxStart; x < rxEnd; x++) {
+        for (let y = Math.floor(bestCeilingY + (bestFloorY - bestCeilingY) * 0.15); y < Math.floor(bestFloorY); y++) {
+          doorScore += sobelH(x, y) + sobelV(x, y);
+        }
+      }
+      const doorDensity = doorScore / ((rxEnd - rxStart) * (bestFloorY - bestCeilingY) * 0.85 + 1);
+      this.detectedSurfaces.hasDoorway = doorDensity > 3;
+
+      // 7. Cutout (puerta/ventana)
+      const roomH = this.floorY - this.ceilingY;
+      this.cutout = {
+        x: this.cornerX + (100 - this.cornerX) * 0.15,
+        y: this.ceilingY + roomH * 0.2,
+        w: (100 - this.cornerX) * 0.28,
+        h: roomH * 0.55
       };
     };
     img.src = dataUrl;
   }
 
-  // Update AR metrics if area changes while analyzing
-  updateDynamicArea() {
-    if (this.isAnalyzing) {
-      this.simulateAnalysis();
+  // ─────────────────────────────────────────────────────────────────────────
+  // Genera las líneas SVG con perspectiva correcta (convergen al punto de fuga)
+  // Devuelve un array de strings "x1,y1,x2,y2" para usar en el template
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Punto de fuga: la esquina de la habitación
+  get vpX(): number { return this.cornerX; }
+  get vpY(): number { return this.ceilingY; }
+
+  // Líneas de perspectiva para la PARED IZQUIERDA
+  // Van desde el punto de fuga hacia el borde izquierdo, distribuidas verticalmente
+  get leftWallLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10; // cantidad de divisiones
+    const topLeft   = { x: 0, y: this.ceilingY - 10 };
+    const botLeft   = { x: 0, y: this.floorY + 10 };
+    const vpBottom  = { x: this.vpX, y: this.floorY };
+    const vpTop     = { x: this.vpX, y: this.ceilingY };
+
+    // Líneas horizontales (van del VP hacia el borde izq, interpolando vertical)
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y1 = this.vpY + (vpBottom.y - this.vpY) * t;
+      const y2 = topLeft.y + (botLeft.y - topLeft.y) * t;
+      lines.push(`${this.vpX},${y1} 0,${y2}`);
     }
+    return lines;
+  }
+
+  // Líneas de perspectiva para la PARED DERECHA
+  get rightWallLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10;
+    const topRight = { x: 100, y: this.ceilingY - 5 };
+    const botRight = { x: 100, y: this.floorY + 5 };
+    const vpBottom = { x: this.vpX, y: this.floorY };
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y1 = this.vpY + (vpBottom.y - this.vpY) * t;
+      const y2 = topRight.y + (botRight.y - topRight.y) * t;
+      lines.push(`${this.vpX},${y1} 100,${y2}`);
+    }
+    return lines;
+  }
+
+  // Líneas verticales pared izquierda (paralelas entre VP y borde, dividiendo ancho)
+  get leftWallVerticals(): string[] {
+    const lines: string[] = [];
+    const steps = 8;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      // Interpolación entre VP y el borde izquierdo
+      const x = this.vpX * (1 - t); // se acerca a 0
+      const topY = this.vpY + (this.ceilingY - 10 - this.vpY) * t;
+      const botY = this.floorY + (this.floorY + 10 - this.floorY) * t;
+      lines.push(`${x},${topY} ${x},${botY}`);
+    }
+    return lines;
+  }
+
+  // Líneas verticales pared derecha
+  get rightWallVerticals(): string[] {
+    const lines: string[] = [];
+    const steps = 8;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const x = this.vpX + (100 - this.vpX) * t;
+      const topY = this.vpY + (this.ceilingY - 5 - this.vpY) * t;
+      const botY = this.floorY + (this.floorY + 5 - this.floorY) * t;
+      lines.push(`${x},${topY} ${x},${botY}`);
+    }
+    return lines;
+  }
+
+  // Líneas del SUELO — radiales desde el VP hacia el fondo
+  get floorLines(): string[] {
+    const lines: string[] = [];
+    const steps = 10;
+    // Horizontales del suelo (van del VP al fondo)
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const yFloor = this.floorY + (100 - this.floorY) * t;
+      // interpolar x entre el punto de fuga y los bordes
+      const xLeft  = this.vpX * (1 - t);
+      const xRight = this.vpX + (100 - this.vpX) * t;
+      // línea horizontal a esa profundidad
+      lines.push(`${xLeft},${yFloor} ${xRight},${yFloor}`);
+    }
+    // Radiales laterales del suelo
+    const numRadials = 8;
+    for (let i = 0; i <= numRadials; i++) {
+      const t = i / numRadials;
+      const endX = 100 * t;
+      const endY = 100;
+      lines.push(`${this.vpX},${this.floorY} ${endX},${endY}`);
+    }
+    return lines;
+  }
+
+  // Líneas del TECHO
+  get ceilingLines(): string[] {
+    const lines: string[] = [];
+    const steps = 8;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const yCeil = this.vpY * (1 - t); // hacia arriba desde VP
+      const xLeft  = this.vpX * (1 - t);
+      const xRight = this.vpX + (100 - this.vpX) * t;
+      lines.push(`${xLeft},${yCeil} ${xRight},${yCeil}`);
+    }
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const endX = 100 * t;
+      lines.push(`${this.vpX},${this.vpY} ${endX},0`);
+    }
+    return lines;
   }
 
   getModalTitle() {
@@ -282,5 +437,11 @@ export class Tab2Page {
       this.isSubmitting = false;
     }
   }
-}
 
+  // Update AR metrics if area changes while analyzing
+  updateDynamicArea() {
+    if (this.isAnalyzing) {
+      this.simulateAnalysis();
+    }
+  }
+}

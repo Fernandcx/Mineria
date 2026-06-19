@@ -1,6 +1,6 @@
 <ion-content class="results-content">
   <div class="page-container">
-    
+
     <!-- Custom Header -->
     <div class="custom-header">
       <div class="header-left">
@@ -32,36 +32,36 @@
     <ng-container *ngIf="!isLoading && project">
       <!-- Results Dashboard View -->
       <div class="dashboard-view" *ngIf="currentView === 'results'">
-        
+
         <!-- Elementos Detectados -->
         <div class="elements-panel">
           <h3 class="panel-label">ELEMENTOS DETECTADOS</h3>
           <div class="elements-row">
-            
+
             <div class="element-item">
               <ion-icon name="grid-outline"></ion-icon>
               <div class="element-value">{{ project.columnas }}</div>
               <div class="element-name">Columnas</div>
             </div>
-            
+
             <div class="element-item">
               <ion-icon name="remove-outline"></ion-icon>
               <div class="element-value">{{ project.vigas }}</div>
               <div class="element-name">Vigas</div>
             </div>
-            
+
             <div class="element-item">
               <ion-icon name="apps-outline"></ion-icon>
               <div class="element-value">{{ project.muros }}</div>
               <div class="element-name">Muros</div>
             </div>
-            
+
           </div>
         </div>
 
         <!-- Metrics Grid -->
         <div class="metrics-grid">
-          
+
           <!-- Acero -->
           <div class="metric-card">
             <div class="icon-wrapper icon-blue">
@@ -72,7 +72,7 @@
               <span class="number">{{ project.acero | number:'1.0-0' }}</span> <span class="unit">kg</span>
             </div>
           </div>
-          
+
           <!-- Concreto -->
           <div class="metric-card">
             <div class="icon-wrapper icon-blue">
@@ -83,7 +83,7 @@
               <span class="number">{{ project.concreto | number:'1.0-1' }}</span> <span class="unit">m³</span>
             </div>
           </div>
-          
+
           <!-- Peso -->
           <div class="metric-card">
             <div class="icon-wrapper icon-blue">
@@ -94,7 +94,7 @@
               <span class="number">{{ project.peso | number:'1.0-1' }}</span> <span class="unit">ton</span>
             </div>
           </div>
-          
+
           <!-- Costo -->
           <div class="metric-card">
             <div class="icon-wrapper icon-green">
@@ -105,52 +105,120 @@
               <span class="number">{{ project.costo | number:'1.0-0' }}</span> <span class="unit">USD</span>
             </div>
           </div>
-          
+
         </div>
-        
+
       </div>
 
       <!-- 3D Structural View (Advanced AR Overlay) -->
       <div class="model-3d-view" *ngIf="currentView === '3D'">
         <div class="ar-preview-container advanced-ar">
           <img [src]="previewImage || 'assets/placeholder.jpg'" class="captured-image" *ngIf="previewImage" />
-          
+
           <div class="no-image" *ngIf="!previewImage">
             <ion-icon name="image-outline"></ion-icon>
             <p>Imagen no disponible</p>
           </div>
-          
+
           <!-- Overlay AR Avanzado -->
           <div class="ar-overlay" *ngIf="project">
             <svg class="ar-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <!-- Cuadrícula perspectiva en la pared principal -->
-              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.2"/>
-              </pattern>
-              
-              <!-- Paredes dinámicas (Izquierda y Derecha) basadas en el centro detectado -->
-              <polygon [attr.points]="'0,'+(ceilingY-10)+' '+cornerX+','+ceilingY+' '+cornerX+','+floorY+' 0,'+(floorY+10)" fill="url(#grid)" stroke="rgba(255,255,255,0.8)" stroke-width="0.5" />
-              <polygon [attr.points]="cornerX+','+ceilingY+' 100,'+(ceilingY-5)+' 100,'+(floorY+5)+' '+cornerX+','+floorY" fill="url(#grid)" stroke="rgba(255,255,255,0.8)" stroke-width="0.5" />
-              
-              <!-- Recorte dinámico -->
-              <rect [attr.x]="cutout.x" [attr.y]="cutout.y" [attr.width]="cutout.w" [attr.height]="cutout.h" fill="rgba(255,255,255,0.1)" stroke="white" stroke-width="0.8" stroke-dasharray="2,2"/>
-              
-              <!-- Línea de la esquina central -->
-              <line [attr.x1]="cornerX" [attr.y1]="ceilingY" [attr.x2]="cornerX" [attr.y2]="floorY" stroke="white" stroke-width="1.5" />
-              
-              <!-- Puntos nodales dinámicos -->
-              <circle [attr.cx]="0" [attr.cy]="ceilingY-10" r="1.5" fill="white" />
-              <circle [attr.cx]="cornerX" [attr.cy]="ceilingY" r="1.5" fill="white" />
-              <circle [attr.cx]="100" [attr.cy]="ceilingY-5" r="1.5" fill="white" />
-              <circle [attr.cx]="0" [attr.cy]="floorY+10" r="1.5" fill="white" />
-              <circle [attr.cx]="cornerX" [attr.cy]="floorY" r="1.5" fill="white" />
-              <circle [attr.cx]="100" [attr.cy]="floorY+5" r="1.5" fill="white" />
+
+              <!-- Fondos translúcidos por superficie -->
+              <polygon
+                [attr.points]="'0,'+(ceilingY-10)+' '+cornerX+','+ceilingY+' '+cornerX+','+floorY+' 0,'+(floorY+10)"
+                fill="rgba(255,255,255,0.05)" stroke="none"/>
+              <polygon
+                [attr.points]="cornerX+','+ceilingY+' 100,'+(ceilingY-5)+' 100,'+(floorY+5)+' '+cornerX+','+floorY"
+                fill="rgba(255,255,255,0.05)" stroke="none"/>
+              <polygon
+                [attr.points]="'0,'+(floorY+10)+' '+cornerX+','+floorY+' 100,'+(floorY+5)+' 100,100 0,100'"
+                fill="rgba(255,255,255,0.04)" stroke="none"/>
+
+              <!-- Grid perspectiva pared izquierda -->
+              <line *ngFor="let ln of leftWallLines"
+                [attr.x1]="ln.split(' ')[0].split(',')[0]"
+                [attr.y1]="ln.split(' ')[0].split(',')[1]"
+                [attr.x2]="ln.split(' ')[1].split(',')[0]"
+                [attr.y2]="ln.split(' ')[1].split(',')[1]"
+                stroke="rgba(255,255,255,0.5)" stroke-width="0.35"/>
+              <line *ngFor="let ln of leftWallVerticals"
+                [attr.x1]="ln.split(' ')[0].split(',')[0]"
+                [attr.y1]="ln.split(' ')[0].split(',')[1]"
+                [attr.x2]="ln.split(' ')[1].split(',')[0]"
+                [attr.y2]="ln.split(' ')[1].split(',')[1]"
+                stroke="rgba(255,255,255,0.4)" stroke-width="0.3"/>
+
+              <!-- Grid perspectiva pared derecha -->
+              <line *ngFor="let ln of rightWallLines"
+                [attr.x1]="ln.split(' ')[0].split(',')[0]"
+                [attr.y1]="ln.split(' ')[0].split(',')[1]"
+                [attr.x2]="ln.split(' ')[1].split(',')[0]"
+                [attr.y2]="ln.split(' ')[1].split(',')[1]"
+                stroke="rgba(255,255,255,0.5)" stroke-width="0.35"/>
+              <line *ngFor="let ln of rightWallVerticals"
+                [attr.x1]="ln.split(' ')[0].split(',')[0]"
+                [attr.y1]="ln.split(' ')[0].split(',')[1]"
+                [attr.x2]="ln.split(' ')[1].split(',')[0]"
+                [attr.y2]="ln.split(' ')[1].split(',')[1]"
+                stroke="rgba(255,255,255,0.4)" stroke-width="0.3"/>
+
+              <!-- Grid perspectiva suelo -->
+              <line *ngFor="let ln of floorLines"
+                [attr.x1]="ln.split(' ')[0].split(',')[0]"
+                [attr.y1]="ln.split(' ')[0].split(',')[1]"
+                [attr.x2]="ln.split(' ')[1].split(',')[0]"
+                [attr.y2]="ln.split(' ')[1].split(',')[1]"
+                stroke="rgba(255,255,255,0.4)" stroke-width="0.3"/>
+
+              <!-- Puerta/ventana -->
+              <rect [attr.x]="cutout.x" [attr.y]="cutout.y"
+                [attr.width]="cutout.w" [attr.height]="cutout.h"
+                fill="rgba(0,0,0,0.12)" stroke="rgba(255,255,255,0.9)"
+                stroke-width="0.9" stroke-dasharray="2.5,1.5"/>
+
+              <!-- Aristas brillantes -->
+              <line [attr.x1]="cornerX" [attr.y1]="ceilingY" [attr.x2]="cornerX" [attr.y2]="floorY"
+                stroke="white" stroke-width="2.2"/>
+              <line x1="0" [attr.y1]="ceilingY-10" [attr.x2]="cornerX" [attr.y2]="ceilingY"
+                stroke="white" stroke-width="1.8"/>
+              <line [attr.x1]="cornerX" [attr.y1]="ceilingY" x2="100" [attr.y2]="ceilingY-5"
+                stroke="white" stroke-width="1.8"/>
+              <line x1="0" [attr.y1]="floorY+10" [attr.x2]="cornerX" [attr.y2]="floorY"
+                stroke="white" stroke-width="1.8"/>
+              <line [attr.x1]="cornerX" [attr.y1]="floorY" x2="100" [attr.y2]="floorY+5"
+                stroke="white" stroke-width="1.8"/>
+              <line x1="0" [attr.y1]="ceilingY-10" x2="0" [attr.y2]="floorY+10"
+                stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+              <line x1="100" [attr.y1]="ceilingY-5" x2="100" [attr.y2]="floorY+5"
+                stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+
+              <!-- Nodos esquinas -->
+              <circle cx="0"           [attr.cy]="ceilingY-10" r="2.2" fill="white"/>
+              <circle [attr.cx]="cornerX" [attr.cy]="ceilingY"    r="3"   fill="white"/>
+              <circle cx="100"         [attr.cy]="ceilingY-5"  r="2.2" fill="white"/>
+              <circle cx="0"           [attr.cy]="floorY+10"   r="2.2" fill="white"/>
+              <circle [attr.cx]="cornerX" [attr.cy]="floorY"      r="3"   fill="white"/>
+              <circle cx="100"         [attr.cy]="floorY+5"    r="2.2" fill="white"/>
             </svg>
 
-            <!-- Etiquetas de medidas dinámicas -->
-            <div class="measurement-label label-top-left" [style.top.%]="(ceilingY + floorY)/2" [style.left.%]="cornerX / 2">{{ arHeight | number:'1.2-2' }} m</div>
-            <div class="measurement-label label-top" [style.top.%]="ceilingY - 5" [style.left.%]="cornerX">{{ arLength | number:'1.2-2' }} m</div>
-            <div class="measurement-label label-right" [style.top.%]="(ceilingY + floorY)/2" [style.left.%]="cornerX + ((100 - cornerX) / 2)">{{ arWidth | number:'1.2-2' }} m</div>
+            <!-- Etiquetas de medidas -->
+            <div class="measurement-label"
+              [style.top.%]="(ceilingY + floorY) / 2"
+              [style.left.%]="cornerX / 2">{{ arHeight | number:'1.2-2' }} m</div>
+            <div class="measurement-label"
+              [style.top.%]="ceilingY - 6"
+              [style.left.%]="cornerX + (100 - cornerX) * 0.38">{{ arLength | number:'1.2-2' }} m</div>
+            <div class="measurement-label"
+              [style.top.%]="(ceilingY + floorY) / 2"
+              [style.left.%]="cornerX + (100 - cornerX) * 0.55">{{ arWidth | number:'1.2-2' }} m</div>
+
+            <!-- Panel V/S/P -->
+            <div class="ar-metrics-panel">
+              <div class="ar-metric-item">V = {{ arVolume | number:'1.2-2' }} m³</div>
+              <div class="ar-metric-item">S = {{ arSurface | number:'1.2-2' }} m²</div>
+              <div class="ar-metric-item">P = {{ arPerimeter | number:'1.2-2' }} m</div>
+            </div>
           </div>
         </div>
       </div>
@@ -158,4 +226,3 @@
 
   </div>
 </ion-content>
-

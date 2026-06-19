@@ -5,6 +5,17 @@ import { Camera } from '@capacitor/camera';
 
 declare const THREE: any;
 
+type SurfaceMode = 'floor' | 'wall';
+
+interface Surface {
+  mode: SurfaceMode;
+  puntos: any[];
+  solidMesh: any;
+  gridMesh: any;
+  edgeMesh: any;
+  wallIndex?: number; // para paredes: índice de orientación
+}
+
 @Component({
   selector: 'app-scan-room',
   templateUrl: './scan-room.page.html',
@@ -14,71 +25,108 @@ export class ScanRoomPage implements OnInit {
   @ViewChild('arContainer', { static: true }) arContainer!: ElementRef;
   @ViewChild('cameraVideo', { static: true }) cameraVideo!: ElementRef;
 
+  // Modo actual: suelo o pared
+  surfaceMode: SurfaceMode = 'floor';
+
+  // Puntos del trazo actual
   puntos: any[] = [];
   medidas: { id: number; distancia: string }[] = [];
-  
-  isSupported = true; // HTML5 Video es universal
+
+  // Superficies completadas
+  surfaces: Surface[] = [];
+
+  isSupported = true;
   isSessionActive = false;
   raycaster = new THREE.Raycaster();
-  
+
   reticle: any;
-  floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Suelo virtual en Y=0
+
+  // Plano de suelo virtual (Y=0)
+  floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+  // Plano de pared virtual (Z = distancia frontal estimada)
+  wallDistance = 2.0; // metros al frente
+  wallPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -this.wallDistance);
 
   constructor(public arService: ArService, private router: Router) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   ionViewDidEnter() {
-    this.startAR(); // Iniciar automáticamente al entrar a la página
+    this.startAR();
   }
 
   async startAR() {
     if (this.isSessionActive) return;
     try {
-      // 1. Iniciar Cámara de Celular HTML5 (restaurado)
       await Camera.requestPermissions();
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       this.cameraVideo.nativeElement.srcObject = stream;
 
-      // 2. Iniciar Three.js Canvas
       this.arService.init(this.arContainer.nativeElement);
 
-      // Crear retículo para plane-detection simulado matemáticamente
+      // Reticle para suelo: anillo horizontal
       const reticleGeo = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
       const reticleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       this.reticle = new THREE.Mesh(reticleGeo, reticleMat);
       this.reticle.visible = false;
       this.arService.scene.add(this.reticle);
 
-      // Iniciar el ciclo de renderizado continuo
       this.arService.setupRenderLoop(this.onRenderFrame.bind(this));
       this.isSessionActive = true;
-      
+
     } catch (error) {
-      alert("No se pudo acceder a la cámara: " + error);
+      alert('No se pudo acceder a la cámara: ' + error);
     }
   }
 
   onRenderFrame() {
     if (!this.isSessionActive || !this.reticle) return;
 
-    // Trazar un rayo desde el centro exacto de la cámara
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.arService.camera);
-    
+
     const target = new THREE.Vector3();
-    const intersect = this.raycaster.ray.intersectPlane(this.floorPlane, target);
-    
-    if (intersect) {
-      // Si el rayo choca con el suelo (mirando hacia abajo/frente)
-      this.reticle.position.copy(target);
-      this.reticle.visible = true;
+
+    if (this.surfaceMode === 'floor') {
+      // Intersección con plano horizontal (suelo)
+      const intersect = this.raycaster.ray.intersectPlane(this.floorPlane, target);
+      if (intersect) {
+        this.reticle.position.copy(target);
+        this.reticle.rotation.set(-Math.PI / 2, 0, 0);
+        this.reticle.visible = true;
+      } else {
+        this.reticle.visible = false;
+      }
     } else {
-      // Si mira al cielo, ocultarlo
-      this.reticle.visible = false;
+      // Intersección con plano vertical (pared frontal)
+      // Actualizar el plano de pared basado en la dirección de la cámara
+      const camDir = new THREE.Vector3();
+      this.arService.camera.getWorldDirection(camDir);
+      camDir.y = 0;
+      camDir.normalize();
+
+      const camPos = this.arService.camera.position.clone();
+      const wallNormal = camDir.clone().negate();
+      const wallPoint = camPos.clone().add(camDir.clone().multiplyScalar(this.wallDistance));
+
+      const dynamicWallPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(wallNormal, wallPoint);
+      const intersect = this.raycaster.ray.intersectPlane(dynamicWallPlane, target);
+
+      if (intersect) {
+        this.reticle.position.copy(target);
+        // Rotar el reticle para que sea vertical (perpendicular a la pared)
+        this.reticle.rotation.set(0, Math.atan2(camDir.x, camDir.z), 0);
+        this.reticle.visible = true;
+      } else {
+        this.reticle.visible = false;
+      }
     }
+  }
+
+  setSurfaceMode(mode: SurfaceMode) {
+    this.surfaceMode = mode;
   }
 
   arVolume: number = 0;
@@ -88,16 +136,16 @@ export class ScanRoomPage implements OnInit {
 
   agregarPunto() {
     if (!this.isSessionActive || !this.reticle || !this.reticle.visible) {
-      alert("Apunta hacia el suelo (círculo blanco en pantalla)");
+      alert(this.surfaceMode === 'floor'
+        ? 'Apunta hacia el suelo (círculo blanco en pantalla)'
+        : 'Apunta hacia la pared frontal');
       return;
     }
 
-    // Tomar la posición del retículo sobre el suelo virtual matemático
     const posicion = new THREE.Vector3().copy(this.reticle.position);
-
     this.puntos.push(posicion);
 
-    // Esfera blanca impecable (Nodo)
+    // Nodo esférico blanco
     const sphereGeom = new THREE.SphereGeometry(0.04, 32, 32);
     const sphereMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const sphere = new THREE.Mesh(sphereGeom, sphereMat);
@@ -108,164 +156,191 @@ export class ScanRoomPage implements OnInit {
       const p1 = this.puntos[this.puntos.length - 2];
       const p2 = this.puntos[this.puntos.length - 1];
 
-      // Tubo perimetral conectando los nodos
+      // Tubo conector
       const path = new THREE.LineCurve3(p1, p2);
       const tubeGeom = new THREE.TubeGeometry(path, 20, 0.015, 8, false);
       const tubeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       const tube = new THREE.Mesh(tubeGeom, tubeMat);
       this.arService.scene.add(tube);
-      
-      const distancia = p1.distanceTo(p2);
-      this.medidas.push({
-        id: this.medidas.length,
-        distancia: distancia.toFixed(2) + ' m'
-      });
 
-      // Etiqueta
+      const distancia = p1.distanceTo(p2);
+      this.medidas.push({ id: this.medidas.length, distancia: distancia.toFixed(2) + ' m' });
+
+      // Etiqueta CSS2D
       const div = document.createElement('div');
       div.className = 'label-3d';
-      div.style.background = 'rgba(0,0,0,0.6)';
-      div.style.color = '#fff';
-      div.style.padding = '4px 10px';
-      div.style.borderRadius = '8px';
-      div.style.fontWeight = 'bold';
-      div.style.fontSize = '14px';
       div.textContent = distancia.toFixed(2) + ' m';
-      
       const midPoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
       const label = new THREE.CSS2DObject(div);
       label.position.copy(midPoint);
       this.arService.scene.add(label);
     }
 
-    // A partir de 3 puntos, rellenar el área con Malla
-    this.dibujarMallaLibre();
+    this.dibujarMallaActual();
   }
 
+  // Meshes del trazo actual (se reemplazan en cada punto nuevo)
   mallaSolidMesh: any = null;
   mallaGridMesh: any = null;
+  mallaEdgeMesh: any = null;
 
-  dibujarMallaLibre() {
+  dibujarMallaActual() {
     if (this.puntos.length < 3) return;
+    this.limpiarMallaActual();
+    this.buildSurfaceMeshes(this.puntos, this.surfaceMode);
+  }
 
-    if (this.mallaSolidMesh) this.arService.scene.remove(this.mallaSolidMesh);
-    if (this.mallaGridMesh) this.arService.scene.remove(this.mallaGridMesh);
+  limpiarMallaActual() {
+    if (this.mallaSolidMesh) { this.arService.scene.remove(this.mallaSolidMesh); this.mallaSolidMesh = null; }
+    if (this.mallaGridMesh) { this.arService.scene.remove(this.mallaGridMesh); this.mallaGridMesh = null; }
+    if (this.mallaEdgeMesh) { this.arService.scene.remove(this.mallaEdgeMesh); this.mallaEdgeMesh = null; }
+  }
 
-    // Triangle Fan para el fondo sólido translúcido
-    const vertices = [];
-    const p0 = this.puntos[0];
-    for (let i = 1; i < this.puntos.length - 1; i++) {
-      const p1 = this.puntos[i];
-      const p2 = this.puntos[i + 1];
+  /**
+   * Construye los tres meshes de una superficie (solid + grid + edge)
+   * y los asigna a this.mallaSolidMesh / mallaGridMesh / mallaEdgeMesh
+   */
+  buildSurfaceMeshes(puntos: any[], mode: SurfaceMode) {
+    const p0 = puntos[0];
+
+    // ── Solid (fondo blanco muy translúcido) ──────────────────────────────
+    const vertices: number[] = [];
+    for (let i = 1; i < puntos.length - 1; i++) {
       vertices.push(p0.x, p0.y, p0.z);
-      vertices.push(p1.x, p1.y, p1.z);
-      vertices.push(p2.x, p2.y, p2.z);
+      vertices.push(puntos[i].x, puntos[i].y, puntos[i].z);
+      vertices.push(puntos[i + 1].x, puntos[i + 1].y, puntos[i + 1].z);
     }
-
     const solidGeo = new THREE.BufferGeometry();
     solidGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    
-    // Calcular normales automáticamente para que se vea bien de ambos lados
     solidGeo.computeVertexNormals();
-
-    const solidMat = new THREE.MeshBasicMaterial({ 
-      color: 0x000000, 
-      transparent: true, 
-      opacity: 0.6,
-      side: THREE.DoubleSide
-    });
-    this.mallaSolidMesh = new THREE.Mesh(solidGeo, solidMat);
+    this.mallaSolidMesh = new THREE.Mesh(solidGeo, new THREE.MeshBasicMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide
+    }));
     this.arService.scene.add(this.mallaSolidMesh);
 
-    // Sistema de Ejes Locales para dibujar la cuadrícula interna perfectamente alineada
-    const XAxis = new THREE.Vector3().subVectors(this.puntos[1], p0).normalize();
-    const tempVec = new THREE.Vector3().subVectors(this.puntos[2], p0);
+    // ── Ejes locales para cuadrícula ──────────────────────────────────────
+    const XAxis = new THREE.Vector3().subVectors(puntos[1], p0).normalize();
+    const tempVec = new THREE.Vector3().subVectors(puntos[2], p0);
     const ZAxis = new THREE.Vector3().crossVectors(XAxis, tempVec).normalize();
+    // YAxis perpendicular al plano local
     const YAxis = new THREE.Vector3().crossVectors(ZAxis, XAxis).normalize();
 
-    // Proyectar todos los puntos a 2D para encontrar el bounding box local
     let minX = 0, maxX = 0, minY = 0, maxY = 0;
-    const pts2D = this.puntos.map((p) => {
-      const vec = new THREE.Vector3().subVectors(p, p0);
-      const x = vec.dot(XAxis);
-      const y = vec.dot(YAxis);
+    puntos.forEach(p => {
+      const v = new THREE.Vector3().subVectors(p, p0);
+      const x = v.dot(XAxis);
+      const y = v.dot(YAxis);
       minX = Math.min(minX, x); maxX = Math.max(maxX, x);
       minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-      return { x, y };
     });
 
-    // Crear la cuadrícula 2D (cada 20cm = 0.2m)
-    const gridSize = 0.2;
-    const gridVerts = [];
-    
-    for (let x = minX; x <= maxX; x += gridSize) {
-      gridVerts.push(x, minY, x, maxY);
-    }
-    for (let y = minY; y <= maxY; y += gridSize) {
-      gridVerts.push(minX, y, maxX, y);
-    }
+    const gridSize = 0.2; // 20 cm
+    const gridVerts3D: number[] = [];
 
-    // Convertir de nuevo a 3D
-    const gridVerts3D = [];
-    for (let i = 0; i < gridVerts.length; i += 4) {
-      const x1 = gridVerts[i], y1 = gridVerts[i+1];
-      const x2 = gridVerts[i+2], y2 = gridVerts[i+3];
-      
-      const v1 = new THREE.Vector3().copy(p0)
-        .add(XAxis.clone().multiplyScalar(x1))
-        .add(YAxis.clone().multiplyScalar(y1));
-      const v2 = new THREE.Vector3().copy(p0)
-        .add(XAxis.clone().multiplyScalar(x2))
-        .add(YAxis.clone().multiplyScalar(y2));
-        
-      gridVerts3D.push(v1.x, v1.y, v1.z);
-      gridVerts3D.push(v2.x, v2.y, v2.z);
+    for (let x = minX; x <= maxX + 0.001; x += gridSize) {
+      const v1 = p0.clone().add(XAxis.clone().multiplyScalar(x)).add(YAxis.clone().multiplyScalar(minY));
+      const v2 = p0.clone().add(XAxis.clone().multiplyScalar(x)).add(YAxis.clone().multiplyScalar(maxY));
+      gridVerts3D.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+    }
+    for (let y = minY; y <= maxY + 0.001; y += gridSize) {
+      const v1 = p0.clone().add(XAxis.clone().multiplyScalar(minX)).add(YAxis.clone().multiplyScalar(y));
+      const v2 = p0.clone().add(XAxis.clone().multiplyScalar(maxX)).add(YAxis.clone().multiplyScalar(y));
+      gridVerts3D.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
     }
 
     const gridGeo = new THREE.BufferGeometry();
     gridGeo.setAttribute('position', new THREE.Float32BufferAttribute(gridVerts3D, 3));
     this.mallaGridMesh = new THREE.LineSegments(gridGeo, new THREE.LineBasicMaterial({
-      color: 0x000000,
-      transparent: true,
-      opacity: 0.8
+      color: 0xffffff, transparent: true, opacity: 0.45
     }));
     this.arService.scene.add(this.mallaGridMesh);
+
+    // ── Borde perimetral brillante ─────────────────────────────────────────
+    const borderVerts: number[] = [];
+    for (let i = 0; i < puntos.length; i++) {
+      const curr = puntos[i];
+      const next = puntos[(i + 1) % puntos.length];
+      borderVerts.push(curr.x, curr.y, curr.z, next.x, next.y, next.z);
+    }
+    const borderGeo = new THREE.BufferGeometry();
+    borderGeo.setAttribute('position', new THREE.Float32BufferAttribute(borderVerts, 3));
+    this.mallaEdgeMesh = new THREE.LineSegments(borderGeo, new THREE.LineBasicMaterial({
+      color: 0xffffff, transparent: false, linewidth: 2
+    }));
+    this.arService.scene.add(this.mallaEdgeMesh);
+  }
+
+  /**
+   * Cierra la superficie actual, la guarda en el array y resetea el trazo
+   */
+  cerrarSuperficieActual() {
+    if (this.puntos.length < 3) {
+      alert('Necesitas al menos 3 puntos para cerrar la superficie.');
+      return;
+    }
+
+    // Tubo de cierre
+    const p1 = this.puntos[this.puntos.length - 1];
+    const p2 = this.puntos[0];
+    const path = new THREE.LineCurve3(p1, p2);
+    const tubeGeom = new THREE.TubeGeometry(path, 20, 0.015, 8, false);
+    const tube = new THREE.Mesh(tubeGeom, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    this.arService.scene.add(tube);
+
+    // Guardar meshes actuales como superficie permanente
+    this.surfaces.push({
+      mode: this.surfaceMode,
+      puntos: [...this.puntos],
+      solidMesh: this.mallaSolidMesh,
+      gridMesh: this.mallaGridMesh,
+      edgeMesh: this.mallaEdgeMesh
+    });
+
+    // Limpiar referencias del trazo actual sin remover de la escena
+    this.mallaSolidMesh = null;
+    this.mallaGridMesh = null;
+    this.mallaEdgeMesh = null;
+    this.puntos = [];
+    this.medidas = [];
   }
 
   generatePlan() {
-    if (this.puntos.length > 2) {
-      // Auto-cerrar el polígono libre conectando el último con el primero
-      const p1 = this.puntos[this.puntos.length - 1];
-      const p2 = this.puntos[0]; 
-      
-      const path = new THREE.LineCurve3(p1, p2);
-      const tubeGeom = new THREE.TubeGeometry(path, 20, 0.015, 8, false);
-      const tubeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const tube = new THREE.Mesh(tubeGeom, tubeMat);
-      this.arService.scene.add(tube);
-      
-      // Cálculo aproximado de área en 3D (Teorema de Stokes simplificado)
+    // Cerrar el trazo activo si tiene puntos
+    if (this.puntos.length >= 3) {
+      this.cerrarSuperficieActual();
+    }
+
+    if (this.surfaces.length === 0) {
+      alert('Necesitas al menos una superficie cerrada.');
+      return;
+    }
+
+    // Calcular métricas totales de todas las superficies
+    let totalArea = 0;
+    let totalPerimetro = 0;
+
+    this.surfaces.forEach(surf => {
+      const pts = surf.puntos;
+
+      // Área (triangle fan)
       let area = 0;
-      for (let i = 0; i < this.puntos.length - 2; i++) {
-        const v1 = new THREE.Vector3().subVectors(this.puntos[i+1], this.puntos[0]);
-        const v2 = new THREE.Vector3().subVectors(this.puntos[i+2], this.puntos[0]);
+      for (let i = 0; i < pts.length - 2; i++) {
+        const v1 = new THREE.Vector3().subVectors(pts[i + 1], pts[0]);
+        const v2 = new THREE.Vector3().subVectors(pts[i + 2], pts[0]);
         area += new THREE.Vector3().crossVectors(v1, v2).length() / 2;
       }
-      
-      let perimetro = 0;
-      for (let i = 0; i < this.puntos.length; i++) {
-        const next = (i + 1) % this.puntos.length;
-        perimetro += this.puntos[i].distanceTo(this.puntos[next]);
-      }
-      
-      this.arSurface = area;
-      this.arPerimeter = perimetro;
-      this.arVolume = area * 0.2; // Volumen aproximado de una pared de 20cm
+      totalArea += area;
 
-      this.showResults = true;
-    } else {
-      alert("Necesitas al menos 3 puntos para cerrar la malla.");
-    }
+      // Perímetro
+      for (let i = 0; i < pts.length; i++) {
+        totalPerimetro += pts[i].distanceTo(pts[(i + 1) % pts.length]);
+      }
+    });
+
+    this.arSurface = totalArea;
+    this.arPerimeter = totalPerimetro;
+    this.arVolume = totalArea * 0.2;
+    this.showResults = true;
   }
 
   cerrar() {
