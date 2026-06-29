@@ -13,6 +13,10 @@ export class Tab1Page {
   isLoading = true;
   errorMessage = '';
 
+  // Propiedades para modal de confirmación personalizado
+  isDeleteModalOpen = false;
+  projectToDeleteId: number | null = null;
+
   constructor(
     private apiService: ApiService,
     private router: Router
@@ -60,5 +64,38 @@ export class Tab1Page {
     if (s.includes('completado')) return 'badge-success';
     if (s.includes('proceso')) return 'badge-primary';
     return 'badge-warning'; // Pendiente u otros
+  }
+
+  showDeleteConfirm(projectId: number, event: Event) {
+    event.stopPropagation();
+    this.projectToDeleteId = projectId;
+    this.isDeleteModalOpen = true;
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.projectToDeleteId = null;
+  }
+
+  async confirmDelete() {
+    if (this.projectToDeleteId === null) return;
+    
+    const idToDelete = this.projectToDeleteId;
+    this.closeDeleteModal();
+    
+    this.isLoading = true;
+    try {
+      const res = await this.apiService.deleteProject(idToDelete);
+      if (res && res.ok) {
+        await this.loadProjects();
+      } else {
+        this.errorMessage = res?.message || 'Error al eliminar el proyecto';
+      }
+    } catch (e: any) {
+      this.errorMessage = 'No se pudo conectar con el servidor para eliminar el proyecto.';
+      console.error(e);
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

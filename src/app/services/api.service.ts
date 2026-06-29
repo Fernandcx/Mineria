@@ -119,4 +119,20 @@ export class ApiService {
     });
     return response.data;
   }
+
+  public async deleteProject(projectId: number) {
+    const baseUrl = this.getBaseUrl();
+    if (!baseUrl) throw new Error('Invalid server IP');
+
+    const response = await axios.post(`${baseUrl}/delete_project.php`, {
+      project_id: projectId
+    }, {
+      timeout: 15000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  }
 }
+
