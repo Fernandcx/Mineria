@@ -1,0 +1,95 @@
+<ion-content [fullscreen]="true">
+  <div class="ar-wrapper">
+    <!-- Cámara Real del Celular (Video HTML5) -->
+    <video #cameraVideo autoplay playsinline muted [hidden]="!isSessionActive" class="bg-camera"></video>
+
+    <!-- Escena 3D Superpuesta (WebGL + CSS2D transparentes) -->
+    <div #arContainer class="ar-container" [hidden]="!isSessionActive"></div>
+  </div>
+
+  <!-- Interfaz Sobrepuesta AR -->
+  <div class="ar-ui-overlay" *ngIf="isSessionActive">
+
+    <!-- Header -->
+    <div class="header">
+      <button class="close-btn" (click)="cerrar()">
+        <ion-icon name="close"></ion-icon>
+      </button>
+      <div class="title">Modo Medición 3D</div>
+      <!-- Contador de superficies completadas -->
+      <div class="surface-counter" *ngIf="surfaces.length > 0">
+        <ion-icon name="layers-outline"></ion-icon>
+        {{ surfaces.length }}
+      </div>
+    </div>
+
+    <!-- Selector de modo: Suelo / Pared -->
+    <div class="mode-selector" *ngIf="!showResults">
+      <button class="mode-btn" [class.active]="surfaceMode === 'floor'" (click)="setSurfaceMode('floor')">
+        <ion-icon name="grid-outline"></ion-icon>
+        Suelo
+      </button>
+      <button class="mode-btn" [class.active]="surfaceMode === 'wall'" (click)="setSurfaceMode('wall')">
+        <ion-icon name="albums-outline"></ion-icon>
+        Pared
+      </button>
+    </div>
+
+    <!-- Indicador de modo activo -->
+    <div class="mode-indicator" *ngIf="!showResults">
+      <span *ngIf="surfaceMode === 'floor'">
+        <ion-icon name="arrow-down-outline"></ion-icon> Apunta al suelo
+      </span>
+      <span *ngIf="surfaceMode === 'wall'">
+        <ion-icon name="arrow-forward-outline"></ion-icon> Apunta a la pared frontal
+      </span>
+      <span *ngIf="puntos.length > 0" class="point-count">{{ puntos.length }} punto{{ puntos.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- Panel de Resultados Finales -->
+    <div class="results-panel" *ngIf="showResults">
+      <div class="vol-item">V = {{ arVolume | number:'1.2-2' }} m³</div>
+      <div class="vol-item">S = {{ arSurface | number:'1.2-2' }} m²</div>
+      <div class="vol-item">P = {{ arPerimeter | number:'1.2-2' }} m</div>
+    </div>
+
+    <!-- Minimapa isométrico flotante -->
+    <div class="isometric-floorplan" *ngIf="showResults">
+      <svg viewBox="0 0 100 50">
+        <polygon points="50,5 95,25 50,45 5,25" fill="rgba(255,255,255,0.8)" stroke="#4a55c2" stroke-width="1" />
+        <polygon points="50,15 80,30 50,40 20,30" fill="none" stroke="#4a55c2" stroke-width="0.5" />
+        <line x1="35" y1="22" x2="65" y2="38" stroke="#4a55c2" stroke-width="0.5" />
+        <line x1="65" y1="22" x2="35" y2="38" stroke="#4a55c2" stroke-width="0.5" />
+      </svg>
+    </div>
+
+    <!-- Controles Inferiores -->
+    <div class="action-footer">
+      <ng-container *ngIf="!showResults">
+
+        <!-- Botón añadir punto -->
+        <button class="add-point-btn" (click)="agregarPunto()">
+          <ion-icon name="add"></ion-icon>
+          {{ surfaceMode === 'floor' ? 'Añadir Punto Suelo' : 'Añadir Punto Pared' }}
+        </button>
+
+        <!-- Cerrar superficie actual (mínimo 3 puntos) -->
+        <button class="secondary-btn" *ngIf="puntos.length >= 3" (click)="cerrarSuperficieActual()">
+          <ion-icon name="checkmark-outline"></ion-icon>
+          Cerrar {{ surfaceMode === 'floor' ? 'Suelo' : 'Pared' }}
+        </button>
+
+        <!-- Generar plano (mínimo 1 superficie o 3 puntos en trazo activo) -->
+        <button class="generate-plan-btn" *ngIf="surfaces.length > 0 || puntos.length > 2" (click)="generatePlan()">
+          Finalizar Escaneo
+        </button>
+
+      </ng-container>
+
+      <button class="generate-plan-btn" *ngIf="showResults" (click)="cerrar()">
+        Guardar Proyecto
+      </button>
+    </div>
+
+  </div>
+</ion-content>

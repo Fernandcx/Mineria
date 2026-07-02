@@ -1,0 +1,83 @@
+<ion-content class="home-content">
+  <div class="page-container">
+    
+    <div class="header-section">
+      <div class="header-text">
+        <h1 class="main-title">Mis Proyectos</h1>
+        <p class="main-subtitle">{{ projects.length }} proyectos</p>
+      </div>
+      <button class="add-project-btn" routerLink="/tabs/tab2">
+        <ion-icon name="add-outline"></ion-icon>
+      </button>
+    </div>
+
+    <div class="projects-list">
+      
+      <div *ngIf="isLoading" class="loading-state" style="text-align: center; padding: 2rem; color: #a1a1aa;">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando proyectos...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-state" style="text-align: center; padding: 2rem; color: #ef4444;">
+        <ion-icon name="alert-circle-outline" style="font-size: 2rem;"></ion-icon>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <div *ngIf="!isLoading && !errorMessage && projects.length === 0" class="empty-state" style="text-align: center; padding: 2rem; color: #a1a1aa;">
+        <ion-icon name="folder-open-outline" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+        <p>No tienes proyectos aún.<br>Presiona el botón + para crear uno.</p>
+      </div>
+      <div class="project-card" *ngFor="let p of projects">
+        
+        <div class="card-image-placeholder">
+          <ion-icon name="cube-outline" class="placeholder-icon"></ion-icon>
+          <span class="status-badge" [ngClass]="p.statusClass">{{ p.status }}</span>
+          
+          <button class="delete-btn" (click)="showDeleteConfirm(p.id, $event)" title="Eliminar proyecto">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+        
+        <div class="card-body">
+          <h2 class="project-title">{{ p.title }}</h2>
+          <div class="project-meta">
+            <span class="meta-item"><ion-icon name="pricetag-outline"></ion-icon> {{ p.area }}</span>
+            <span class="meta-item"><ion-icon name="calendar-outline"></ion-icon> {{ p.dateStr }}</span>
+          </div>
+          
+          <div class="card-actions">
+            <button class="action-btn btn-primary" routerLink="/editor">
+              <ion-icon name="eye-outline"></ion-icon>
+              Ver
+            </button>
+            <button class="action-btn btn-secondary" routerLink="/editor" [queryParams]="{view: '3D'}">
+              <ion-icon name="cube-outline"></ion-icon>
+              3D
+            </button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Modal Personalizado para Confirmar Eliminación -->
+  <div class="custom-modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmar eliminación</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer y borrará toda la información relacionada.</p>
+        <div class="modal-actions">
+          <button class="modal-btn btn-cancel" (click)="closeDeleteModal()">Cancelar</button>
+          <button class="modal-btn btn-confirm-delete" (click)="confirmDelete()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

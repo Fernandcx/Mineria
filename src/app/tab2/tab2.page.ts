@@ -82,15 +82,7 @@ export class Tab2Page {
         // Redirigir al nuevo Escáner WebXR
         this.router.navigate(['/scan-room']);
       } else if (this.inputType === 'images') {
-        const photo = await Camera.getPhoto({
-          resultType: CameraResultType.DataUrl,
-          source: CameraSource.Photos,
-          quality: 90
-        });
-        if (photo && photo.dataUrl) {
-          this.previewImage = photo.dataUrl;
-          this.simulateAnalysis();
-        }
+        this.router.navigate(['/scan-room'], { queryParams: { mode: 'photo' } });
       } else if (this.inputType === 'plans') {
         if (this.fileInput) {
           this.fileInput.nativeElement.click();

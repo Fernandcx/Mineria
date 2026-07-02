@@ -1,0 +1,77 @@
+<ion-content class="profile-content">
+  <div class="page-container">
+    
+    <div class="profile-header">
+      <div class="avatar-circle">
+        <ion-icon name="person-outline"></ion-icon>
+      </div>
+      <h2 class="user-name">{{ user.nombre }}</h2>
+      <p class="user-email">
+        <ion-icon name="mail-outline"></ion-icon>
+        {{ user.usuario }}
+      </p>
+    </div>
+
+    <div class="menu-card">
+      <div class="menu-item" (click)="toggleSection('personal')">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>Información personal</span>
+        <ion-icon [name]="expandedSection === 'personal' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'personal'">
+        <p><strong>Nombre:</strong> {{ user.nombre }}</p>
+        <p><strong>Email:</strong> {{ user.usuario }}</p>
+        <p><strong>Teléfono:</strong> +52 555 123 4567</p>
+      </div>
+      <div class="menu-divider"></div>
+      
+      <div class="menu-item" (click)="toggleSection('config')">
+        <ion-icon name="settings-outline"></ion-icon>
+        <span>Configuración</span>
+        <ion-icon [name]="expandedSection === 'config' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'config'">
+        <div class="config-option">
+          <span>Notificaciones push</span>
+          <ion-toggle checked="true"></ion-toggle>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      
+      <div class="menu-item" (click)="toggleSection('history')">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>Historial de proyectos</span>
+        <span class="badge" *ngIf="expandedSection !== 'history'">3</span>
+        <ion-icon [name]="expandedSection === 'history' ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+      </div>
+      <div class="menu-content" *ngIf="expandedSection === 'history'">
+        
+        <div *ngIf="isLoadingHistory" style="text-align: center; padding: 1rem; color: #a1a1aa;">
+          <ion-spinner name="dots"></ion-spinner>
+        </div>
+
+        <div *ngIf="historyError" style="text-align: center; padding: 1rem; color: #ef4444;">
+          <p>{{ historyError }}</p>
+        </div>
+
+        <ul class="history-list" *ngIf="!isLoadingHistory && !historyError && history.length > 0">
+          <li *ngFor="let h of history">
+            Proyecto ID: {{ h.proyecto_id }}
+            <br><em>{{ h.resultado_ia ? 'Analizado' : 'Sin procesar' }} - {{ h.fechaFormateada }}</em>
+          </li>
+        </ul>
+
+        <div *ngIf="!isLoadingHistory && !historyError && history.length === 0" style="text-align: center; padding: 1rem; color: #a1a1aa;">
+          <p>No hay historial de escaneos aún.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="logout-btn" (click)="logout()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Cerrar sesión
+    </button>
+
+  </div>
+</ion-content>

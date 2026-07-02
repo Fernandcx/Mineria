@@ -1,95 +1,280 @@
-<ion-content [fullscreen]="true">
-  <div class="ar-wrapper">
-    <!-- Cámara Real del Celular (Video HTML5) -->
-    <video #cameraVideo autoplay playsinline muted [hidden]="!isSessionActive" class="bg-camera"></video>
+<ion-content [fullscreen]="true" class="no-scroll">
+  <!-- ONBOARDING TUTORIAL OVERLAY -->
+  <div class="onboarding-overlay" *ngIf="showOnboarding">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <h2>Guía de Uso Rápida</h2>
+        <button class="skip-btn" (click)="closeOnboarding()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
 
-    <!-- Escena 3D Superpuesta (WebGL + CSS2D transparentes) -->
-    <div #arContainer class="ar-container" [hidden]="!isSessionActive"></div>
+      <!-- Carousel / Tabs de Instrucciones -->
+      <div class="onboarding-body">
+        <div class="step-item">
+          <div class="step-icon">
+            <!-- SVG Animado para Escaneo -->
+            <svg viewBox="0 0 100 100" class="anim-svg scan-phone">
+              <!-- Suelo / Rejilla -->
+              <ellipse cx="50" cy="80" rx="35" ry="10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+              <ellipse cx="50" cy="80" rx="20" ry="6" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+              <!-- Teléfono -->
+              <g class="phone-group">
+                <rect x="38" y="25" width="24" height="42" rx="4" fill="none" stroke="white" stroke-width="2" />
+                <circle cx="50" cy="62" r="1.5" fill="white" />
+                <!-- Líneas de escaneo -->
+                <path d="M50,45 L50,75 M35,80 L50,45 L65,80" stroke="#4a55c2" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.8" />
+              </g>
+            </svg>
+          </div>
+          <h3>1. Calibra tu Cámara (AR)</h3>
+          <p>Mueve tu celular suavemente en círculos enfocando el suelo para detectar las superficies reales.</p>
+        </div>
+
+        <div class="step-item">
+          <div class="step-icon">
+            <svg viewBox="0 0 100 100" class="anim-svg add-points">
+              <!-- Malla en forma de habitación -->
+              <polygon points="20,70 50,55 80,70 50,85" fill="rgba(74, 85, 194, 0.2)" stroke="white" stroke-width="1.5" />
+              <!-- Puntos de la malla -->
+              <circle cx="20" cy="70" r="4" fill="#4a55c2" stroke="white" stroke-width="1.5" />
+              <circle cx="50" cy="55" r="4" fill="#4a55c2" stroke="white" stroke-width="1.5" />
+              <circle cx="80" cy="70" r="4" fill="#4a55c2" stroke="white" stroke-width="1.5" />
+              <!-- Mano pulsando -->
+              <g class="hand-pulse">
+                <path d="M50,85 L45,95 M50,85 L55,95" stroke="white" stroke-width="2" />
+                <circle cx="50" cy="85" r="4" fill="#ffd700" stroke="white" stroke-width="1.5" />
+                <circle cx="50" cy="85" r="12" fill="none" stroke="#ffd700" stroke-width="1" class="pulse-ring" />
+              </g>
+            </svg>
+          </div>
+          <h3>2. Traza los Puntos</h3>
+          <p>Apunta la retícula en las esquinas y presiona "Añadir Punto". Cierra la superficie con 3 o más puntos.</p>
+        </div>
+
+        <div class="step-item">
+          <div class="step-icon">
+            <svg viewBox="0 0 100 100" class="anim-svg photo-2d">
+              <rect x="15" y="15" width="70" height="60" rx="6" fill="none" stroke="white" stroke-width="2" />
+              <path d="M15,60 L40,40 L65,65 L85,50 L85,75 L15,75 Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5" />
+              <circle cx="65" cy="32" r="6" fill="#ffd700" />
+              <line x1="30" y1="50" x2="70" y2="50" stroke="#ffd700" stroke-width="2" stroke-dasharray="3,3" />
+            </svg>
+          </div>
+          <h3>3. ¿No tienes AR? Usa Foto 2D</h3>
+          <p>Sube un plano o foto, marca una escala de referencia y dibuja directamente en la pantalla con tus dedos.</p>
+        </div>
+      </div>
+
+      <button class="understand-btn" (click)="closeOnboarding()">¡Entendido, Empezar!</button>
+    </div>
   </div>
 
-  <!-- Interfaz Sobrepuesta AR -->
-  <div class="ar-ui-overlay" *ngIf="isSessionActive">
+  <div class="ar-wrapper" [hidden]="activeMode !== 'ar'">
+    <!-- Cámara Real del Celular (Video HTML5) -->
+    <video #cameraVideo autoplay playsinline muted class="bg-camera"></video>
 
+    <!-- Escena 3D Superpuesta (WebGL + CSS2D transparentes) -->
+    <div #arContainer class="ar-container"></div>
+  </div>
+
+  <!-- MODO FOTO 2D WORKSPACE -->
+  <div class="photo-wrapper" *ngIf="activeMode === 'photo'">
+    <!-- Imagen del plano/foto subida -->
+    <div class="photo-empty-state" *ngIf="!photoUrl">
+      <ion-icon name="image-outline"></ion-icon>
+      <h3>Ninguna Imagen Cargada</h3>
+      <p>Sube una foto de tu habitación o un plano digital para medir sobre él.</p>
+      <button class="upload-btn" (click)="selectPhoto()">
+        <ion-icon name="cloud-upload-outline"></ion-icon> Seleccionar Foto / Plano
+      </button>
+    </div>
+
+    <div class="photo-workspace" *ngIf="photoUrl">
+      <div class="canvas-container" (click)="onPhotoClick($event)">
+        <img [src]="photoUrl" class="photo-img" />
+        <!-- Overlay SVG para trazo y medición -->
+        <svg class="photo-svg">
+          <!-- Polígonos de Mallas Guardadas -->
+          <polygon *ngFor="let surf of photoSurfaces" 
+                   [attr.points]="getSvgPointsStringForPoints(surf.points)" 
+                   class="polygon-mesh" style="fill: rgba(74, 85, 194, 0.22); stroke: rgba(255, 255, 255, 0.6); stroke-width: 2;" />
+
+          <!-- Polígono Relleno (malla 2D activa) -->
+          <polygon *ngIf="photoPoints.length >= 3" [attr.points]="getSvgPointsString()" class="polygon-mesh" />
+
+          <!-- Trazado de líneas -->
+          <polyline *ngIf="photoPoints.length > 0" [attr.points]="getSvgPointsString()" class="polyline-stroke" />
+
+          <!-- Etiquetas de distancias en los segmentos de la malla -->
+          <g *ngFor="let pt of photoPoints; let idx = index">
+            <!-- Texto del segmento (si la escala está disponible y tenemos más de 1 punto) -->
+            <g *ngIf="photoScale && (idx < photoPoints.length - 1 || photoPoints.length >= 3)">
+              <rect [attr.x]="getSegmentMidpoint(idx).x - 22" [attr.y]="getSegmentMidpoint(idx).y - 14" width="44" height="18" rx="4" fill="white" class="label-bg" />
+              <text [attr.x]="getSegmentMidpoint(idx).x" [attr.y]="getSegmentMidpoint(idx).y - 1" class="label-text">
+                {{ getSegmentLength(idx).toFixed(2) }}m
+              </text>
+            </g>
+          </g>
+
+          <!-- Puntos del Trazado -->
+          <circle *ngFor="let pt of photoPoints; let idx = index" [attr.cx]="pt.x" [attr.cy]="pt.y" r="7" class="mesh-point" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERFAZ GENERAL SOBREPUESTA -->
+  <div class="ar-ui-overlay">
     <!-- Header -->
     <div class="header">
       <button class="close-btn" (click)="cerrar()">
         <ion-icon name="close"></ion-icon>
       </button>
-      <div class="title">Modo Medición 3D</div>
-      <!-- Contador de superficies completadas -->
-      <div class="surface-counter" *ngIf="surfaces.length > 0">
-        <ion-icon name="layers-outline"></ion-icon>
-        {{ surfaces.length }}
+
+      <!-- Selector de Modo de Trabajo (Pestañas) -->
+      <div class="mode-tabs">
+        <button class="tab-btn" [class.active]="activeMode === 'ar'" (click)="setWorkMode('ar')">
+          <ion-icon name="videocam-outline"></ion-icon> 3D AR
+        </button>
+        <button class="tab-btn" [class.active]="activeMode === 'photo'" (click)="setWorkMode('photo')">
+          <ion-icon name="image-outline"></ion-icon> Foto 2D
+        </button>
       </div>
-    </div>
 
-    <!-- Selector de modo: Suelo / Pared -->
-    <div class="mode-selector" *ngIf="!showResults">
-      <button class="mode-btn" [class.active]="surfaceMode === 'floor'" (click)="setSurfaceMode('floor')">
-        <ion-icon name="grid-outline"></ion-icon>
-        Suelo
-      </button>
-      <button class="mode-btn" [class.active]="surfaceMode === 'wall'" (click)="setSurfaceMode('wall')">
-        <ion-icon name="albums-outline"></ion-icon>
-        Pared
+      <!-- Ayuda -->
+      <button class="help-btn" (click)="openOnboarding()">
+        <ion-icon name="help-circle-outline"></ion-icon>
       </button>
     </div>
 
-    <!-- Indicador de modo activo -->
-    <div class="mode-indicator" *ngIf="!showResults">
-      <span *ngIf="surfaceMode === 'floor'">
-        <ion-icon name="arrow-down-outline"></ion-icon> Apunta al suelo
-      </span>
-      <span *ngIf="surfaceMode === 'wall'">
-        <ion-icon name="arrow-forward-outline"></ion-icon> Apunta a la pared frontal
-      </span>
-      <span *ngIf="puntos.length > 0" class="point-count">{{ puntos.length }} punto{{ puntos.length !== 1 ? 's' : '' }}</span>
-    </div>
+    <!-- CONTROLES MODO AR 3D -->
+    <ng-container *ngIf="activeMode === 'ar'">
+      <!-- Botón WebXR (Si está disponible) -->
+      <div class="webxr-panel" *ngIf="webXRAvailable">
+        <button class="webxr-btn" [class.active]="isWebXRActive" (click)="toggleWebXR()">
+          <ion-icon name="cube-outline"></ion-icon>
+          {{ isWebXRActive ? 'Apagar WebXR' : 'Encender WebXR (Hit-Test)' }}
+        </button>
+      </div>
 
-    <!-- Panel de Resultados Finales -->
-    <div class="results-panel" *ngIf="showResults">
-      <div class="vol-item">V = {{ arVolume | number:'1.2-2' }} m³</div>
-      <div class="vol-item">S = {{ arSurface | number:'1.2-2' }} m²</div>
-      <div class="vol-item">P = {{ arPerimeter | number:'1.2-2' }} m</div>
-    </div>
+      <!-- Selector de superficie Suelo / Pared -->
+      <div class="mode-selector" *ngIf="!showResults">
+        <button class="mode-btn" [class.active]="surfaceMode === 'floor'" (click)="setSurfaceMode('floor')">
+          <ion-icon name="grid-outline"></ion-icon> Suelo
+        </button>
+        <button class="mode-btn" [class.active]="surfaceMode === 'wall'" (click)="setSurfaceMode('wall')">
+          <ion-icon name="albums-outline"></ion-icon> Pared
+        </button>
+      </div>
 
-    <!-- Minimapa isométrico flotante -->
-    <div class="isometric-floorplan" *ngIf="showResults">
-      <svg viewBox="0 0 100 50">
-        <polygon points="50,5 95,25 50,45 5,25" fill="rgba(255,255,255,0.8)" stroke="#4a55c2" stroke-width="1" />
-        <polygon points="50,15 80,30 50,40 20,30" fill="none" stroke="#4a55c2" stroke-width="0.5" />
-        <line x1="35" y1="22" x2="65" y2="38" stroke="#4a55c2" stroke-width="0.5" />
-        <line x1="65" y1="22" x2="35" y2="38" stroke="#4a55c2" stroke-width="0.5" />
+      <!-- Indicador de estado -->
+      <div class="mode-indicator" *ngIf="!showResults">
+        <span *ngIf="surfaceMode === 'floor'">
+          <ion-icon name="arrow-down-outline"></ion-icon> Apunta al suelo {{ isWebXRActive ? '(WebXR)' : '' }}
+        </span>
+        <span *ngIf="surfaceMode === 'wall'">
+          <ion-icon name="arrow-forward-outline"></ion-icon> Apunta a la pared {{ isWebXRActive ? '(WebXR)' : '' }}
+        </span>
+        <span *ngIf="puntos.length > 0" class="point-count">{{ puntos.length }} punto{{ puntos.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      <!-- Resultados AR -->
+      <div class="results-panel" *ngIf="showResults">
+        <div class="vol-item">V = {{ arVolume | number:'1.2-2' }} m³</div>
+        <div class="vol-item">S = {{ arSurface | number:'1.2-2' }} m²</div>
+        <div class="vol-item">P = {{ arPerimeter | number:'1.2-2' }} m</div>
+      </div>
+
+      <!-- Footer Acciones AR -->
+      <div class="action-footer">
+        <ng-container *ngIf="!showResults">
+          <!-- Botón Añadir Punto -->
+          <button class="add-point-btn" (click)="agregarPunto()">
+            <ion-icon name="add"></ion-icon>
+            {{ surfaceMode === 'floor' ? 'Añadir Punto Suelo' : 'Añadir Punto Pared' }}
+          </button>
+
+          <!-- Cerrar superficie actual -->
+          <button class="secondary-btn" *ngIf="puntos.length >= 3" (click)="cerrarSuperficieActual()">
+            <ion-icon name="checkmark-outline"></ion-icon> Cerrar {{ surfaceMode === 'floor' ? 'Suelo' : 'Pared' }}
+          </button>
+
+          <!-- Finalizar escaneo -->
+          <button class="generate-plan-btn" *ngIf="surfaces.length > 0 || puntos.length > 2" (click)="generatePlan()">
+            Finalizar Escaneo
+          </button>
+        </ng-container>
+
+        <button class="generate-plan-btn" *ngIf="showResults" (click)="cerrar()">
+          Guardar Proyecto
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- CONTROLES MODO FOTO 2D -->
+    <ng-container *ngIf="activeMode === 'photo' && photoUrl">
+      <!-- Indicador Estado Foto -->
+      <div class="photo-info-bar">
+        <span class="calibration-done">
+          <ion-icon name="image-outline"></ion-icon> Medición Automática
+        </span>
+        <span *ngIf="photoPoints.length > 0" class="point-count">{{ photoPoints.length }} punto{{ photoPoints.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      <!-- Resultados Foto -->
+      <div class="results-panel" *ngIf="photoShowResults">
+        <div class="vol-item">V = {{ photoVolume | number:'1.2-2' }} m³</div>
+        <div class="vol-item">S = {{ photoArea | number:'1.2-2' }} m²</div>
+        <div class="vol-item">P = {{ photoPerimeter | number:'1.2-2' }} m</div>
+      </div>
+
+      <!-- Footer Acciones Foto -->
+      <div class="action-footer">
+        <ng-container *ngIf="!photoShowResults">
+          <!-- Botón Borrar Último Punto -->
+          <button class="secondary-btn" *ngIf="photoPoints.length > 0" (click)="borrarUltimoPuntoPhoto()">
+            <ion-icon name="backspace-outline"></ion-icon> Borrar Punto
+          </button>
+
+          <!-- Botón Marcar Área Nueva -->
+          <button class="secondary-btn" *ngIf="photoPoints.length >= 3" (click)="guardarAreaActualPhoto()">
+            <ion-icon name="add-circle-outline"></ion-icon> Marcar Área Nueva
+          </button>
+
+          <!-- Botón Finalizar Trazado -->
+          <button class="generate-plan-btn" *ngIf="photoPoints.length >= 3 || photoSurfaces.length > 0" (click)="finalizarEscaneoPhoto()">
+            Calcular Área
+          </button>
+        </ng-container>
+
+        <!-- Botones Adicionales -->
+        <button class="secondary-btn btn-change-photo" (click)="selectPhoto()" *ngIf="!photoShowResults">
+          <ion-icon name="image-outline"></ion-icon> Cambiar Foto
+        </button>
+
+        <button class="generate-plan-btn" *ngIf="photoShowResults" (click)="cerrar()">
+          Guardar Proyecto
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Minimapa Dinámico del Plano -->
+    <div class="isometric-floorplan" *ngIf="showResults || (activeMode === 'photo' && photoShowResults)">
+      <div class="minimap-title" style="color: white; font-size: 10px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Plano Detallado</div>
+      <svg viewBox="0 0 100 100" style="width: 100px; height: 100px; background: rgba(0,0,0,0.6); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 12px; backdrop-filter: blur(8px); padding: 5px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
+        <defs>
+          <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100" height="100" fill="url(#grid)" rx="8" />
+        <polygon [attr.points]="getDynamicFloorplanSvgPoints(activeMode)" 
+                 fill="rgba(74, 85, 194, 0.35)" 
+                 stroke="#a5b4fc" 
+                 stroke-width="3" 
+                 stroke-linejoin="round" />
       </svg>
     </div>
-
-    <!-- Controles Inferiores -->
-    <div class="action-footer">
-      <ng-container *ngIf="!showResults">
-
-        <!-- Botón añadir punto -->
-        <button class="add-point-btn" (click)="agregarPunto()">
-          <ion-icon name="add"></ion-icon>
-          {{ surfaceMode === 'floor' ? 'Añadir Punto Suelo' : 'Añadir Punto Pared' }}
-        </button>
-
-        <!-- Cerrar superficie actual (mínimo 3 puntos) -->
-        <button class="secondary-btn" *ngIf="puntos.length >= 3" (click)="cerrarSuperficieActual()">
-          <ion-icon name="checkmark-outline"></ion-icon>
-          Cerrar {{ surfaceMode === 'floor' ? 'Suelo' : 'Pared' }}
-        </button>
-
-        <!-- Generar plano (mínimo 1 superficie o 3 puntos en trazo activo) -->
-        <button class="generate-plan-btn" *ngIf="surfaces.length > 0 || puntos.length > 2" (click)="generatePlan()">
-          Finalizar Escaneo
-        </button>
-
-      </ng-container>
-
-      <button class="generate-plan-btn" *ngIf="showResults" (click)="cerrar()">
-        Guardar Proyecto
-      </button>
-    </div>
-
   </div>
 </ion-content>

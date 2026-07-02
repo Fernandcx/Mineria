@@ -1,0 +1,265 @@
+.no-scroll {
+  --overflow: hidden;
+}
+
+.ar-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: black;
+
+  .bg-camera {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  .ar-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+  }
+}
+
+.ar-ui-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  // ── Header ─────────────────────────────────────────────────────────────
+  .header {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    margin-top: env(safe-area-inset-top, 20px);
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.85);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1e204c;
+      font-size: 22px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    .surface-counter {
+      background: #4a55c2;
+      color: white;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  // ── Selector Suelo / Pared ──────────────────────────────────────────────
+  .mode-selector {
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 20px;
+
+    .mode-btn {
+      flex: 1;
+      max-width: 140px;
+      padding: 10px 16px;
+      border-radius: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all 0.2s ease;
+
+      ion-icon {
+        font-size: 18px;
+      }
+
+      &.active {
+        background: white;
+        color: #2e3271;
+        border-color: white;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  // ── Indicador de modo ───────────────────────────────────────────────────
+  .mode-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 20px;
+
+    span {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 13px;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+
+    .point-count {
+      background: rgba(74, 85, 194, 0.85);
+      color: white;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+  }
+
+  // ── Panel resultados ────────────────────────────────────────────────────
+  .results-panel {
+    pointer-events: auto;
+    position: absolute;
+    bottom: 26%;
+    right: 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+
+    .vol-item {
+      background: rgba(255, 255, 255, 0.95);
+      color: #2e3271;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border-left: 3px solid #2e3271;
+    }
+  }
+
+  // ── Minimapa ────────────────────────────────────────────────────────────
+  .isometric-floorplan {
+    position: absolute;
+    bottom: 36%;
+    left: 5%;
+    width: 30%;
+    pointer-events: none;
+
+    svg {
+      width: 100%;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    }
+  }
+
+  // ── Footer de acciones ──────────────────────────────────────────────────
+  .action-footer {
+    pointer-events: auto;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+
+    .add-point-btn,
+    .secondary-btn,
+    .generate-plan-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 24px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .add-point-btn {
+      background: white;
+      color: #2e3271;
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .generate-plan-btn {
+      background: #4a55c2;
+      color: white;
+    }
+  }
+}
+
+/* CSS2D labels flotantes */
+.label-3d {
+  background: white;
+  color: #1e204c;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  white-space: nowrap;
+}
